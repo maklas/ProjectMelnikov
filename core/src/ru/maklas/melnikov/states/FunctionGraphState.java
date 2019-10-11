@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
 import ru.maklas.libs.Timer;
+import ru.maklas.melnikov.engine.DevelopmentSystem;
 import ru.maklas.mengine.*;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.Asset;
@@ -78,6 +79,7 @@ public class FunctionGraphState extends AbstractEngineState {
         engine.add(new PointRenderSystem()
                 .setYScale(defaultScale));
         engine.add(new GradientRenderSystem());
+        engine.add(new DevelopmentSystem());
     }
 
     @Override

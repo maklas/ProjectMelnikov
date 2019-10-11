@@ -53,7 +53,7 @@ public class EngineInputAdapter implements InputProcessor {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         Vector2 mouse = Utils.toScreen(screenX, screenY, cam);
         fingerPositions[pointer].set(mouse);
-        engine.dispatch(new TouchUpEvent(mouse, pointer));
+        engine.dispatch(new TouchUpEvent(mouse, pointer, button));
         return true;
     }
 

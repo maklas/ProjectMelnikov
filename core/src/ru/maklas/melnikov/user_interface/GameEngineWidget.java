@@ -36,7 +36,7 @@ public class GameEngineWidget extends Widget {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                engine.dispatch(new TouchUpEvent(Utils.getMouse(getCamera()), pointer));
+                engine.dispatch(new TouchUpEvent(Utils.getMouse(getCamera()), pointer, button));
                 super.touchUp(event, x, y, pointer, button);
             }
         });

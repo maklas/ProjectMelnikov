@@ -36,7 +36,7 @@ public class M {
 
     public static final ComponentMapper<FunctionComponent>              fun = ComponentMapper.of(FunctionComponent.class);
     public static final ComponentMapper<BiFunctionComponent>            biFun = ComponentMapper.of(BiFunctionComponent.class);
-    public static final ComponentMapper<PointComponent>                 cross = ComponentMapper.of(PointComponent.class);
+    public static final ComponentMapper<PointComponent>                 point = ComponentMapper.of(PointComponent.class);
 
     /** Сортируем системы в порядке их обновления в Engine.update() **/
     public static void initialize(){
@@ -59,6 +59,8 @@ public class M {
         map.put(ScalableFunctionRenderSystem.class, i++);
         map.put(FunctionTrackingRenderSystem.class, i++);
         map.put(PointRenderSystem.class, i++);
+
+        map.put(DevelopmentSystem.class, i++);
     }
 
     /** Устанавливаем длинну массива Entity.components[] в зависимости от количества компонентов. **/

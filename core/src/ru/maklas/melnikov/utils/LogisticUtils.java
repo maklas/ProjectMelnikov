@@ -8,10 +8,12 @@ public class LogisticUtils {
 	}
 
 	public static double logisticCost(double value, int target) {
-		if (target > 0.5){
+		if (target == 1){
 			return -Math.log10(value);
-		} else {
+		} else if (target == 0){
 			return -Math.log10(1 - value);
+		} else {
+			throw new RuntimeException("Bad input: " + target);
 		}
 	}
 

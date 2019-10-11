@@ -41,7 +41,7 @@ public class PointRenderSystem extends RenderEntitySystem implements YScalable {
         batch.begin();
 
         for (Entity point : points) {
-            PointComponent pp = point.get(M.cross);
+            PointComponent pp = point.get(M.point);
             Color color = pp.colorOverride != null ? pp.colorOverride : pp.type.getColor();
             batch.setColor(color);
             float scale = 0.25f * cam.zoom;

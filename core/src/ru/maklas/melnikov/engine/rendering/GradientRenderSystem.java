@@ -16,13 +16,13 @@ import ru.maklas.mengine.RenderEntitySystem;
 
 public class GradientRenderSystem extends RenderEntitySystem {
 
-    public enum Mode {POWER, ANGLE, ZERO_TO_ONE, MINUS_ONE_TO_ONE};
+    public enum Mode {POWER, ANGLE, ZERO_TO_ONE, MINUS_ONE_TO_ONE, SPLIT_ON_ZERO};
     private ShapeRenderer sr;
     private ImmutableArray<Entity> entities;
     private OrthographicCamera cam;
     private double max = 1_000_000;
     private double min = Double.MAX_VALUE;
-    private Mode mode = Mode.MINUS_ONE_TO_ONE;
+    private Mode mode = Mode.SPLIT_ON_ZERO;
     private static final double intensityPower = 1; //Makes closer to black
     private static final double sharpness = 1000; //1...1000
     private static final boolean revert = true;
@@ -84,6 +84,9 @@ public class GradientRenderSystem extends RenderEntitySystem {
                             break;
                         case MINUS_ONE_TO_ONE:
                             intensity = MathUtils.clamp(val + 0.5, 0, 1);
+                            break;
+                        case SPLIT_ON_ZERO:
+                            intensity = val > 0.5 ? 1 : 0;
                             break;
                         default:
                             throw new RuntimeException("Unknwon  type");

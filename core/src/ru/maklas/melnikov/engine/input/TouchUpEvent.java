@@ -11,11 +11,13 @@ public class TouchUpEvent implements Event {
     float x;
     float y;
     int finger;
+    int button;
 
-    public TouchUpEvent(Vector2 point, int finger) {
+    public TouchUpEvent(Vector2 point, int finger, int button) {
         this.x = point.x;
         this.y = point.y;
         this.finger = finger;
+        this.button = button;
     }
 
     public float getX() {
@@ -28,5 +30,9 @@ public class TouchUpEvent implements Event {
 
     public int getFinger() {
         return finger;
+    }
+
+    public int getButton() {
+        return button;
     }
 }
