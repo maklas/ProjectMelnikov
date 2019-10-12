@@ -4,6 +4,7 @@ package ru.maklas.melnikov.tests;
 import com.badlogic.gdx.math.Vector2;
 import ru.maklas.melnikov.mnw.MNW;
 import ru.maklas.melnikov.utils.ClassUtils;
+import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.StringUtils;
 import ru.maklas.melnikov.utils.Utils;
 
@@ -14,7 +15,9 @@ import ru.maklas.melnikov.utils.Utils;
 public class Test {
 
     public static void main(String[] args){
-
+        for (double i = 0; i < 1; i+=0.099999999999) {
+            System.out.println(StringUtils.df(i, 1) + ": " + LogisticUtils.logisticCost(i, 1));
+        }
     }
 
     private static int f(int x){

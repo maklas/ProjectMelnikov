@@ -24,7 +24,7 @@ public class GradientRenderSystem extends RenderEntitySystem {
     private double min = Double.MAX_VALUE;
     private Mode mode = Mode.SPLIT_ON_ZERO;
     private static final double intensityPower = 1; //Makes closer to black
-    private static final double sharpness = 1000; //1...1000
+    private static final double sharpness = 0; //1...1000
     private static final boolean revert = true;
 
     @Override
@@ -43,7 +43,7 @@ public class GradientRenderSystem extends RenderEntitySystem {
         float rightX = Utils.camRightX(cam);
         float botY = Utils.camBotY(cam);
         float topY = Utils.camTopY(cam);
-        float step = cam.zoom;
+        float step = cam.zoom * 2;
         ShapeRenderer sr = this.sr;
         double min = this.min;
         double max = this.max;

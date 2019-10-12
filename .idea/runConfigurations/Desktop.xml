@@ -1,5 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Desktop" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="ru.maklas.melnikov.desktop.DesktopLauncher" />
     <module name="desktop" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/android/assets" />
