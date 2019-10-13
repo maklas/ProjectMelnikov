@@ -5,33 +5,52 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.WindowedMean;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ImmutableArray;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.ImageAssets;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
+import ru.maklas.melnikov.engine.functions.FunctionComponent;
 import ru.maklas.melnikov.engine.input.TouchUpEvent;
 import ru.maklas.melnikov.engine.point.PointComponent;
 import ru.maklas.melnikov.engine.point.PointType;
+import ru.maklas.melnikov.engine.rendering.YScalable;
+import ru.maklas.melnikov.functions.FunctionFromFloats;
+import ru.maklas.melnikov.functions.GraphFunction;
 import ru.maklas.melnikov.functions.bi_functions.GraphBiFunction;
 import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
+import ru.maklas.melnikov.states.FunctionGraphState;
+import ru.maklas.melnikov.states.Parameters;
 import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.StringUtils;
 import ru.maklas.melnikov.utils.Utils;
+import ru.maklas.melnikov.utils.gsm_lib.GSMPush;
+import ru.maklas.melnikov.utils.gsm_lib.State;
+import ru.maklas.melnikov.utils.math.DoubleArray;
+import ru.maklas.melnikov.utils.math.Matrix;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
 import ru.maklas.mengine.EntitySystem;
 import ru.maklas.mengine.RenderEntitySystem;
 
-public class DevelopmentSystem extends RenderEntitySystem {
+import java.util.Random;
+
+public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 
 	private ImmutableArray<Entity> points;
 	private ImmutableArray<Entity> biFunctions;
 	private Batch batch;
-	private Array<NormalizedData> normalizedData;
 	private OrthographicCamera cam;
+	private Parameters parameters;
+	private int iteration = 0;
+	private FloatArray costHistory = new FloatArray();
+	private double yScale = 1;
+	private ShapeRenderer sr;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
@@ -39,110 +58,149 @@ public class DevelopmentSystem extends RenderEntitySystem {
 		subscribe(TouchUpEvent.class, this::onTouch);
 		biFunctions = entitiesFor(BiFunctionComponent.class);
 		batch = engine.getBundler().get(B.batch);
+		sr = engine.getBundler().get(B.sr);
 		cam = engine.getBundler().get(B.cam);
+		parameters = engine.getBundler().get(B.params);
 	}
 
 	private void onTouch(TouchUpEvent e) {
-		engine.add(new Entity(e.getX(), e.getY(), 0).add(new PointComponent(e.getButton() == Input.Buttons.LEFT ? PointType.BLUE : PointType.RED)));
-
-	}
-
-	private double getCost(){
-		normalizedData = normalize(points);
-		for (Entity biFunction : biFunctions) {
-			BiFunctionComponent bf = biFunction.get(M.biFun);
-			double costSum = 0;
-			if (bf.fun instanceof LogisticBiFunction) {
-				LogisticBiFunction fun = (LogisticBiFunction) bf.fun;
-
-				for (NormalizedData datum : normalizedData) {
-					double val = fun.f(datum.x1, datum.x2);
-					double cost = LogisticUtils.logisticCost(val, datum.type);
-					costSum += cost;
+		switch (parameters.getMode()) {
+			case POINT:
+				engine.add(new Entity(e.getX(), e.getY(), 0).add(new PointComponent(e.getButton() == Input.Buttons.LEFT ? PointType.BLUE : PointType.RED)));
+				break;
+			case CLOUD:
+				Random random = new Random();
+				double diameter = parameters.getCloudRadius() * 2 * cam.zoom;
+				for (int i = 0; i < parameters.getCloudSize(); i++) {
+					double x = e.getX() + (random.nextGaussian() - 0.5) * diameter;
+					double y = e.getY() + (random.nextGaussian() - 0.5) * diameter;
+					engine.add(new Entity(((float) x), ((float) y), 0).add(new PointComponent(e.getButton() == Input.Buttons.LEFT ? PointType.BLUE : PointType.RED)));
 				}
-			}
-			double totalCost = costSum / normalizedData.size;
-			return totalCost;
+				break;
 		}
-		return 0;
 	}
 
-	private Array<NormalizedData> normalize(ImmutableArray<Entity> points) {
-		final boolean applyNormalization = false;
-		Array<NormalizedData> normalizedData = new Array<>(points.size());
-		WindowedMean xwm = new WindowedMean(points.size());
-		WindowedMean ywm = new WindowedMean(points.size());
-		for (Entity point : points) {
-			xwm.addValue(point.x);
-			ywm.addValue(point.y);
-		}
+	private double getCost() {
+		return LogisticUtils.logisticCost(getFeatures(), getLabels(), getWeights());
+	}
 
-		float xMean = xwm.getMean();
-		float xStd = xwm.standardDeviation();
-		float yMean = ywm.getMean();
-		float yStd = ywm.standardDeviation();
-		for (int i = 0; i < points.size(); i++) {
-			Entity point = points.get(i);
-			double newX = applyNormalization ? (point.x - xMean) / xStd : point.x;
-			double newY = applyNormalization ? (point.y - yMean) / yStd : point.y;
-			normalizedData.add(new NormalizedData(newX, newY, point.get(M.point).type.getClassification()));
-		}
-
-		return normalizedData;
+	private double getAccuracy() {
+		return LogisticUtils.accuracy(getFeatures(), getLabels(), getWeights());
 	}
 
 	@Override
 	public void render() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 			points.cpyArray().foreach(engine::removeLater);
-			normalizedData = null;
+			iteration = 0;
+			costHistory.clear();
+		}
+		if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+			State state = getEngine().getBundler().get(B.gsmState);
+			State newState = new FunctionGraphState(Array.with(new Entity().add(new FunctionComponent(new FunctionFromFloats(costHistory)).color(Color.BLACK))), new Parameters());
+			state.getGsm().setCommand(new GSMPush(state, newState, true, true));
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.T) || Gdx.input.isKeyPressed(Input.Keys.Y)) {
 			train();
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.U)){
+		if (Gdx.input.isKeyPressed(Input.Keys.U)) {
 			long start = System.currentTimeMillis();
-			while (System.currentTimeMillis() - start < 16){
+			while (System.currentTimeMillis() - start < 16) {
 				train();
 			}
 		}
 
-		//draw points and costs for each
-		if (normalizedData != null && false) {
-			batch.setColor(Color.GRAY);
-			batch.begin();
+		drawSides();
+		drawPoints();
+		drawCostsForPoints();
+		drawIterationAndCost();
+	}
 
-			for (NormalizedData data : normalizedData) {
-				ImageAssets.draw(batch, A.images.circle, ((float) data.x1), ((float) data.x2), 0.5f, 0.5f, 0.5f * cam.zoom, 0.5f * cam.zoom, 0);
+	private void drawSides() {
+		GraphBiFunction f = getFunction();
+		if (f == null) return;
+
+		sr.begin(ShapeRenderer.ShapeType.Point);
+
+		double rightX = Utils.camRightX(cam);
+		double leftX = Utils.camLeftX(cam);
+		double botY = Utils.camBotY(cam);
+		double topY = Utils.camTopY(cam);
+		double step = 3 * cam.zoom;
+
+		for (double x = leftX; x < rightX; x += step) {
+			for (double y = botY; y < topY; y += step) {
+				double val = f.f(x, y);
+				sr.setColor(val > 0 ? Color.RED : Color.BLUE);
+				sr.point((float) x, (float) y, 0);
 			}
+		}
+		sr.end();
+	}
 
-			A.images.font.setColor(Color.BLACK);
-			if (biFunctions.size() > 0 ) {
-				GraphBiFunction biFun = biFunctions.get(0).get(M.biFun).fun;
-				for (NormalizedData data : normalizedData) {
-					double val = biFun.f(data.x1, data.x2);
-					String value = StringUtils.df(val, 2);
-					String cost = StringUtils.df(LogisticUtils.logisticCost(val, data.type), 4);
-					A.images.font.draw(batch, value + " | " + cost, ((float) data.x1), ((float) data.x2), 10, Align.left, false);
-				}
+	private void drawPoints() {
+		batch.begin();
 
-			}
-
-
-			batch.end();
+		for (Entity point : points) {
+			PointComponent pp = point.get(M.point);
+			Color color = pp.colorOverride != null ? pp.colorOverride : pp.type.getColor();
+			batch.setColor(color);
+			float scale = 0.25f * cam.zoom;
+			float x = point.x;
+			float y = (float) (point.y / yScale);
+			ImageAssets.draw(batch, A.images.circle, x, y, 0.5f, 0.5f, scale, scale, 0);
 		}
 
-		boolean printCost = true;
+		batch.end();
+	}
 
-		if (printCost) {
-			A.images.font.setColor(Color.RED);
-			batch.begin();
-			float x = Utils.camLeftX(cam);
-			float y = Utils.camTopY(cam) - 15 * cam.zoom;
-			A.images.font.draw(batch, "Cost: " + StringUtils.df(getCost(), 4), x, y, 10, Align.left, false);
-			batch.end();
+	private void drawCostsForPoints() {
+		if (points.size() == 0) return;
+		GraphBiFunction f = getFunction();
+		if (f == null) return;
+		Vector2 mouse = Utils.getMouse(cam);
+		Entity closestPoint = points.first();
+		float minDst2 = mouse.dst2(closestPoint.x, closestPoint.y);
+		final float range2 = (float) Math.pow(5 * cam.zoom, 2);
+
+		for (int i = 1; i < points.size(); i++) {
+			Entity p = points.get(i);
+			float dst2 = mouse.dst2(p.x, p.y);
+			if (dst2 < minDst2){
+				closestPoint = p;
+				minDst2 = dst2;
+			}
 		}
 
+		if (minDst2 > range2) return;
+
+		A.images.font.setColor(closestPoint.get(M.point).getColor());
+		batch.begin();
+		Vector2 pos = Utils.vec1.set(closestPoint.x, closestPoint.y);
+		double value = LogisticUtils.sigmoid(f.f(closestPoint.x, closestPoint.y));
+		double cost = LogisticUtils.logisticCost(value, closestPoint.get(M.point).type.getClassification());
+		A.images.font.draw(batch, StringUtils.vec(pos, 2) + " | " + StringUtils.dfOpt(cost, 4), pos.x, pos.y, 10, Align.left, false);
+		batch.end();
+	}
+
+	private GraphBiFunction getFunction(){
+		if (biFunctions.size() == 0) return null;
+		return biFunctions.get(0).get(M.biFun).fun;
+	}
+
+	private void drawIterationAndCost() {
+		A.images.font.setColor(Color.RED);
+		batch.begin();
+		float x = Utils.camLeftX(cam);
+		float y = Utils.camTopY(cam) - 15 * cam.zoom;
+		A.images.font.draw(batch, "Iteration: " + iteration, x, y, 10, Align.left, false);
+		y -= 20 * cam.zoom;
+		A.images.font.draw(batch, "Cost: " + StringUtils.dfOpt(getCost(), 10), x, y, 10, Align.left, false);
+		y -= 20 * cam.zoom;
+		A.images.font.draw(batch, "Accuracy: " + StringUtils.dfOpt(getAccuracy() * 100, 3), x, y, 10, Align.left, false);
+		y -= 20 * cam.zoom;
+		A.images.font.draw(batch, "LR: " + StringUtils.dfOpt(parameters.getLearningRate(), 10), x, y, 10, Align.left, false);
+		batch.end();
 	}
 
 	private void train() {
@@ -152,33 +210,53 @@ public class DevelopmentSystem extends RenderEntitySystem {
 		if (!(biFun instanceof LogisticBiFunction)) return;
 		LogisticBiFunction model = (LogisticBiFunction) biFun;
 
-		Array<NormalizedData> data = normalize(points);
-		double[][] features = new double[points.size()][2];
-		int[] labels = new int[points.size()];
-		double[] weights = new double[]{model.th0, model.th1, model.th2};
+		Matrix features = new Matrix();
+		DoubleArray labels = new DoubleArray(points.size());
+		DoubleArray weights = DoubleArray.with(model.th0, model.th1, model.th2);
 
-		for (int i = 0; i < features.length; i++) {
-			NormalizedData d = data.get(i);
-			features[i] = new double[]{d.x1, d.x2};
-			labels[i] = d.type;
+		for (int i = 0; i < points.size(); i++) {
+			Entity p = points.get(i);
+			features.addRow(DoubleArray.with(1, p.x, p.y));
+			labels.add(p.get(M.point).type.getClassification());
 		}
 
-		double[] weightAdjustments = LogisticUtils.gradientDescent(features, labels, weights, 0.1);
-		model.th0 -= weightAdjustments[0];
-		model.th1 -= weightAdjustments[1];
-		model.th2 -= weightAdjustments[2];
+		DoubleArray weightAdjustments = LogisticUtils.gradientDescent(features, labels, weights, 0.1);
+		model.th0 -= weightAdjustments.get(0);
+		model.th1 -= weightAdjustments.get(1);
+		model.th2 -= weightAdjustments.get(2);
+		iteration++;
+		costHistory.add((float) getCost());
 	}
 
-	private class NormalizedData {
-		double x1;
-		double x2;
-		int type;
-
-		public NormalizedData(double x1, double x2, int type) {
-			this.x1 = x1;
-			this.x2 = x2;
-			this.type = type;
+	private Matrix getFeatures(){
+		Matrix features = new Matrix();
+		for (int i = 0; i < points.size(); i++) {
+			Entity p = points.get(i);
+			features.addRow(DoubleArray.with(1, p.x, p.y));
 		}
+		return features;
+	}
 
+	private DoubleArray getLabels(){
+		DoubleArray labels = new DoubleArray();
+		for (int i = 0; i < points.size(); i++) {
+			Entity p = points.get(i);
+			labels.add(p.get(M.point).type.getClassification());
+		}
+		return labels;
+	}
+
+	private DoubleArray getWeights(){
+		if (biFunctions.size() < 1) return null;
+		GraphBiFunction biFun = biFunctions.get(0).get(M.biFun).fun;
+		if (!(biFun instanceof LogisticBiFunction)) return null;
+		LogisticBiFunction model = (LogisticBiFunction) biFun;
+		return DoubleArray.with(model.th0, model.th1, model.th2);
+	}
+
+	@Override
+	public EntitySystem setYScale(double yScale) {
+		this.yScale = yScale;
+		return this;
 	}
 }

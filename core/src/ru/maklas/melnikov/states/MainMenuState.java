@@ -20,14 +20,14 @@ public class MainMenuState extends State {
     protected void onCreate() {
 
         Array<Entity> entities = new Array<>();
-        //entities.add(new Entity().add(new FunctionComponent(new SineWaveFunction(50, 100)).color(Color.BLACK)));
-        //entities.add(new Entity(100, 200, 0).add(new PointComponent(PointType.RED)));
-        //entities.add(new Entity(200, 250, 0).add(new PointComponent(PointType.BLUE)));
-        entities.add(new Entity().add(new BiFunctionComponent(new LogisticBiFunction(1, 1, 1))));
-        //entities.add(new Entity().add(new FunctionComponent(new CustomFunction()).color(Color.BLUE)));
+        //entities.addRow(new Entity().addRow(new FunctionComponent(new SineWaveFunction(50, 100)).color(Color.BLACK)));
+        //entities.addRow(new Entity(100, 200, 0).addRow(new PointComponent(PointType.RED)));
+        //entities.addRow(new Entity(200, 250, 0).addRow(new PointComponent(PointType.BLUE)));
+        entities.add(new Entity().add(new BiFunctionComponent(new LogisticBiFunction(1, 1, 1)).setColor(Color.BLACK)));
+        //entities.addRow(new Entity().addRow(new FunctionComponent(new CustomFunction()).color(Color.BLUE)));
 
         MNW.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
-        pushState(new FunctionGraphState(entities, -1000, 1000));
+        pushState(new FunctionGraphState(entities, new Parameters()));
     }
 
     @Override

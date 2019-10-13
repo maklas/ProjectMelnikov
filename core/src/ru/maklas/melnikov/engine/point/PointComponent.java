@@ -14,4 +14,8 @@ public class PointComponent implements Component {
 	public PointComponent(PointType type) {
 		this.type = type;
 	}
+
+	public Color getColor() {
+		return colorOverride != null ? colorOverride : type.getColor();
+	}
 }

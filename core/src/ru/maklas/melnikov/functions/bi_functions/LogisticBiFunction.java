@@ -1,17 +1,11 @@
 package ru.maklas.melnikov.functions.bi_functions;
 
 
-import ru.maklas.melnikov.utils.LogisticUtils;
-
 public class LogisticBiFunction extends GraphBiFunction{
 
 	public double th0;
 	public double th1;
 	public double th2;
-
-	public LogisticBiFunction() {
-
-	}
 
 	public LogisticBiFunction(double th0, double th1, double th2) {
 		this.th0 = th0;
@@ -20,13 +14,14 @@ public class LogisticBiFunction extends GraphBiFunction{
 	}
 
 	@Override
-	public double f(double x1, double x2) {
-		return LogisticUtils.hypothesis(x1, x2, th0, th1, th2);
+	public double f(double x1, double y) {
+		return th0 + (x1 * th1) + (y * th2);
+		//return LogisticUtils.hypothesis(x1, x2, th0, th1, th2);
 	}
 
 	@Override
-	public double g(double x1, double x2) {
-		return f(x1, x2);
+	public double g(double x1, double y) {
+		return Math.sqrt(th1 * th1 + th2 * th2);
 	}
 
 }

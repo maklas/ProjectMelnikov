@@ -7,6 +7,8 @@ import ru.maklas.melnikov.utils.ClassUtils;
 import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.StringUtils;
 import ru.maklas.melnikov.utils.Utils;
+import ru.maklas.melnikov.utils.math.DoubleArray;
+import ru.maklas.melnikov.utils.math.Matrix;
 
 /**
  * Created by maklas on 04-Jan-18.
@@ -15,9 +17,15 @@ import ru.maklas.melnikov.utils.Utils;
 public class Test {
 
     public static void main(String[] args){
-        for (double i = 0; i < 1; i+=0.099999999999) {
-            System.out.println(StringUtils.df(i, 1) + ": " + LogisticUtils.logisticCost(i, 1));
-        }
+        Matrix a = new Matrix(new double[][]{{2, 3, 1}, {2, -7, 4}});
+        Matrix b = new Matrix(new double[][]{{3, 4, 5}, {1, 1, 4}, {2, 1, 4}});
+        System.out.println(a);
+        System.out.println("+");
+        System.out.println(b);
+        System.out.println("=");
+        System.out.println(a.mul(b));
+		System.out.println();
+        System.out.println(b.addColumn(DoubleArray.with(1.0, 2.0, 3.0), 0));
     }
 
     private static int f(int x){

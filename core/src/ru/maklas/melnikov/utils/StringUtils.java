@@ -27,6 +27,18 @@ public class StringUtils {
         return String.format(Locale.ENGLISH, "%.0"+ numbersAfterComma + "f", d);
     }
 
+    public static String dfOpt(double d, int numbersAfterComma){
+        String s = df(d, numbersAfterComma);
+        if (s.length() > 3){
+            int index = s.length() - 1;
+            while (s.charAt(index) == '0') {
+                index--;
+            }
+            return s.charAt(index) == '.' ? s.substring(0, index + 2) : s.substring(0, index + 1);
+        }
+        return s;
+    }
+
     public static String df(double d){
         return df(d, 2);
     }

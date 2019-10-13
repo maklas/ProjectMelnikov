@@ -1,6 +1,8 @@
 package ru.maklas.melnikov.utils;
 
 import com.badlogic.gdx.math.MathUtils;
+import ru.maklas.melnikov.utils.math.DoubleArray;
+import ru.maklas.melnikov.utils.math.Matrix;
 
 public class LogisticUtils {
 
@@ -13,6 +15,18 @@ public class LogisticUtils {
 		return MathUtils.clamp(1 / (1 + Math.exp(-value)), 1e-3, 1e3);
 	}
 
+	public static double hypothesis(double x1, double x2, double th0, double th1, double th2) {
+		return sigmoidNoInfinity(th0 + (x1 * th1) + (x2 * th2));
+	}
+
+	public static DoubleArray predictions(Matrix features, DoubleArray weights){
+		DoubleArray predictions = new DoubleArray(features.getHeight());
+		for (int i = 0; i < features.getHeight(); i++) {
+			predictions.add(sigmoidNoInfinity(features.getRow(i).sumMultiplication(weights)));
+		}
+		return predictions;
+	}
+
 	public static double logisticCost(double value, int target) {
 		if (target == 1){
 			return -Math.log(value);
@@ -23,56 +37,37 @@ public class LogisticUtils {
 		}
 	}
 
-	public static int classify(double val) {
-		return val >= 0.5 ? 1 : 0;
+	public static double logisticCost(Matrix features, DoubleArray labels, DoubleArray weights) {
+		DoubleArray predictions = predictions(features, weights);
+		double costs = 0;
+		for (int i = 0; i < predictions.size; i++) {
+			costs += logisticCost(predictions.get(i), labels.get(i) > 0.5 ? 1 : 0);
+		}
+		return costs / predictions.size;
 	}
 
-	public static double hypothesis(double x1, double x2, double th0, double th1, double th2) {
-		return sigmoidNoInfinity(th0 + (x1 * th1) + (x2 * th2));
+	public static double accuracy(Matrix features, DoubleArray labels, DoubleArray weights) {
+		DoubleArray predictions = predictions(features, weights);
+		DoubleArray diff = predictions.minus(labels);
+		return 1.0 - ((double) diff.count(d -> Math.abs(d) >= 0.5) / diff.size);
 	}
+
 
 	/**
-	 * @param features [x][2]
+	 * @param features [x][3]
 	 * @param lables   [x]
 	 * @param weights  [3]
 	 * @param learningRate хз
 	 * @return gradient descent to be distracted from weights [3]
 	 */
-	public static double[] gradientDescent(double[][] features, int[] lables, double[] weights, double learningRate) {
-
-		int size = features.length;
-
-		double[] predictions = new double[size];
-		for (int i = 0; i < size; i++) {
-			double[] feature = features[i];
-			predictions[i] = hypothesis(feature[0], feature[1], weights[0], weights[1], weights[2]);
-		}
-		double[] predictionsMinusLabels = new double[size];
-		for (int i = 0; i < size; i++) {
-			predictionsMinusLabels[i] = predictions[i] - lables[i];
-		}
-		double[] gradient = new double[3];
-		gradient[0] = 0;
-		for (int i = 0; i < size; i++) {
-			double p = predictionsMinusLabels[i];
-			gradient[0] += p;
-		}
-		for (int i = 0; i < size; i++) {
-			double f1 = features[i][0];
-			double p = predictionsMinusLabels[i];
-			gradient[1] += f1 * p;
-		}
-		for (int i = 0; i < size; i++) {
-			double f2 = features[i][1];
-			double p = predictionsMinusLabels[i];
-			gradient[2] += f2 * p;
-		}
-
-		for (int i = 0; i < gradient.length; i++) {
-			gradient[i] = gradient[i]* (learningRate / size);
-		}
-
-		return gradient;
+	public static DoubleArray gradientDescent(Matrix features, DoubleArray lables, DoubleArray weights, double learningRate) {
+		int size = features.getHeight();
+		DoubleArray predictionsMinusLabels = predictions(features, weights).minus(lables);
+		DoubleArray gradient = features //[x, 3]
+				.transpose() //[3, x]
+				.mul(predictionsMinusLabels.toColumn()) //[3, 1]
+				.firstColumn();//[3]
+		return gradient.mul(learningRate / size);
 	}
 
 }

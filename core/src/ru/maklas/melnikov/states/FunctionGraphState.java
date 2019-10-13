@@ -29,6 +29,7 @@ public class FunctionGraphState extends AbstractEngineState {
     private static final double defaultScale = 1.0;
 
     private final Array<Entity> entitiesToAdd;
+    private final Parameters parameters;
     private final double leftX;
     private final double rightX;
     private OrthographicCamera cam;
@@ -37,10 +38,11 @@ public class FunctionGraphState extends AbstractEngineState {
     private double targetYScale = 1;
     private Timer smoothScaleTimer;
 
-    public FunctionGraphState(Array<Entity> entities, double leftX, double rightX) {
+    public FunctionGraphState(Array<Entity> entities, Parameters parameters) {
         this.entitiesToAdd = entities;
-        this.leftX = leftX;
-        this.rightX = rightX;
+        this.parameters = parameters;
+        this.leftX = -10;
+        this.rightX = 10;
     }
 
     @Override
@@ -57,6 +59,7 @@ public class FunctionGraphState extends AbstractEngineState {
         bundler.set(B.batch, batch);
         bundler.set(B.gsmState, this);
         bundler.set(B.sr, sr);
+        bundler.set(B.params, parameters);
     }
 
     @Override
@@ -76,10 +79,9 @@ public class FunctionGraphState extends AbstractEngineState {
                 .setPrintXY(true)
                 .setPrintFunctionNames(true)
                 .setYScale(defaultScale));
-        engine.add(new PointRenderSystem()
-                .setYScale(defaultScale));
         engine.add(new GradientRenderSystem());
         engine.add(new DevelopmentSystem());
+        engine.add(new BiFunctionRenderSystem());
     }
 
     @Override

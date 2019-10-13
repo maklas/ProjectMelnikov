@@ -60,6 +60,7 @@ public class M {
         map.put(FunctionTrackingRenderSystem.class, i++);
         map.put(PointRenderSystem.class, i++);
 
+        map.put(BiFunctionRenderSystem.class, i++);
         map.put(DevelopmentSystem.class, i++);
     }
 

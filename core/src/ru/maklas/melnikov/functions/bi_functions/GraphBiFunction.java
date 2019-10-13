@@ -4,26 +4,26 @@ import ru.maklas.melnikov.functions.GraphFunction;
 
 public abstract class GraphBiFunction {
 
-    public abstract double f(double x1, double x2);
+    public abstract double f(double x1, double y);
 
-    public double g(double x1, double x2) {
-        return f(x1, x2);
+    public double g(double x1, double y) {
+        return f(x1, y);
     }
 
-    public final double absF(double x1, double x2){
-        return Math.abs(f(x1, x2));
+    public final double absF(double x1, double y){
+        return Math.abs(f(x1, y));
     }
 
-    public final GraphFunction lockX1(double x1){
-        return x -> GraphBiFunction.this.f(x1, x);
+    public final GraphFunction lockX(double x){
+        return y -> GraphBiFunction.this.f(x, y);
     }
 
-    public final GraphFunction lockX2(double x2){
-        return x -> GraphBiFunction.this.f(x, x2);
+    public final GraphFunction lockY(double y){
+        return x -> GraphBiFunction.this.f(x, y);
     }
 
     public String name(){
-        return null;
+        return "";
     }
 
 }

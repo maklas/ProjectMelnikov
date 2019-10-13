@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import ru.maklas.libs.Counter;
+import ru.maklas.melnikov.states.Parameters;
 import ru.maklas.mengine.Bundler;
 import ru.maklas.mengine.BundlerKey;
 import ru.maklas.melnikov.statics.ID;
@@ -24,5 +25,6 @@ public class B {
     public static final BundlerKey<TimeSlower> timeSlower = BundlerKey.of("timeSlower");
     public static final BundlerKey<State> gsmState = BundlerKey.of("state");
     public static final BundlerKey<ShapeRenderer> sr = BundlerKey.of("shapeRenderer");
+    public static final BundlerKey<Parameters> params = BundlerKey.of("parameters");
 
 }
