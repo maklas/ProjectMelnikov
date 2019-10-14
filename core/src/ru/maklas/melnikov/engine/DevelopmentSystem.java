@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
@@ -21,10 +20,9 @@ import ru.maklas.melnikov.engine.point.PointComponent;
 import ru.maklas.melnikov.engine.point.PointType;
 import ru.maklas.melnikov.engine.rendering.YScalable;
 import ru.maklas.melnikov.functions.FunctionFromFloats;
-import ru.maklas.melnikov.functions.GraphFunction;
 import ru.maklas.melnikov.functions.bi_functions.GraphBiFunction;
 import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
-import ru.maklas.melnikov.states.FunctionGraphState;
+import ru.maklas.melnikov.states.LogisticRegressionState;
 import ru.maklas.melnikov.states.Parameters;
 import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.StringUtils;
@@ -97,7 +95,7 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
 			State state = getEngine().getBundler().get(B.gsmState);
-			State newState = new FunctionGraphState(Array.with(new Entity().add(new FunctionComponent(new FunctionFromFloats(costHistory)).color(Color.BLACK))), new Parameters());
+			State newState = new LogisticRegressionState(Array.with(new Entity().add(new FunctionComponent(new FunctionFromFloats(costHistory)).color(Color.BLACK))), new Parameters());
 			state.getGsm().setCommand(new GSMPush(state, newState, true, true));
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.T) || Gdx.input.isKeyPressed(Input.Keys.Y)) {

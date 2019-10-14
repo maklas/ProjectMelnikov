@@ -114,7 +114,7 @@ project(":core") {
 
         compile "com.github.maklas:MEngine:0.5.3"
         compile "com.github.maklas:MLibs:0.2.1"
-        //compile "com.github.maklas:MNet-2:0.5.1"
+        compile "com.kotcrab.vis:vis-ui:1.4.2"
     }
 
 }

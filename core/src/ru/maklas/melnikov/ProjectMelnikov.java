@@ -18,12 +18,12 @@ import ru.maklas.melnikov.utils.gsm_lib.EmptyStateManager;
 import ru.maklas.melnikov.utils.gsm_lib.MultilayerStateManager;
 import ru.maklas.melnikov.utils.gsm_lib.State;
 
-public class ProjectTemplate extends ApplicationAdapter {
+public class ProjectMelnikov extends ApplicationAdapter {
 
     private State launchState;
     private Batch batch;
 
-    public ProjectTemplate(State state) {
+    public ProjectMelnikov(State state) {
         this.launchState = state;
     }
 

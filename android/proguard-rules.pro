@@ -82,7 +82,7 @@
     public *;
 }
 
-#ProjectTemplate
+#ProjectMelnikov
 -keep public class * implements ru.maklas.melnikov.utils.networking.NetEvent { *; }
 -dontwarn java.awt.**
 -adaptresourcefilecontents **.json

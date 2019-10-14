@@ -12,7 +12,7 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import io.fabric.sdk.android.Fabric;
 import ru.maklas.melnikov.mnw.MNW;
-import ru.maklas.melnikov.states.MainMenuState;
+import ru.maklas.melnikov.states.LogisticRegressionSetupState;
 import ru.maklas.melnikov.utils.Config;
 import ru.maklas.melnikov.utils.Log;
 
@@ -36,12 +36,12 @@ public class AndroidLauncher extends AndroidApplication {
         MNW.statistics = new AndroidStatistics();
 
         loadWithAds(config);
-        //initialize(new ProjectBird(new MainMenuState()), config);
+        //initialize(new ProjectBird(new LogisticRegressionSetupState()), config);
     }
 
 
     private ApplicationListener getLauncher() {
-        return new ProjectTemplate(new MainMenuState());
+        return new ProjectMelnikov(new LogisticRegressionSetupState());
     }
 
     private void enableCrashlytics() {

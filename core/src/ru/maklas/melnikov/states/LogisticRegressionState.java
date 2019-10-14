@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
 import ru.maklas.libs.Timer;
 import ru.maklas.melnikov.engine.DevelopmentSystem;
+import ru.maklas.melnikov.mnw.MNW;
 import ru.maklas.mengine.*;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.Asset;
@@ -23,7 +24,7 @@ import ru.maklas.melnikov.engine.other.EntityDebugSystem;
 import ru.maklas.melnikov.engine.other.TTLSystem;
 import ru.maklas.melnikov.engine.rendering.*;
 
-public class FunctionGraphState extends AbstractEngineState {
+public class LogisticRegressionState extends AbstractEngineState {
 
     private static final boolean enableAutoScaling = false;
     private static final double defaultScale = 1.0;
@@ -38,7 +39,7 @@ public class FunctionGraphState extends AbstractEngineState {
     private double targetYScale = 1;
     private Timer smoothScaleTimer;
 
-    public FunctionGraphState(Array<Entity> entities, Parameters parameters) {
+    public LogisticRegressionState(Array<Entity> entities, Parameters parameters) {
         this.entitiesToAdd = entities;
         this.parameters = parameters;
         this.leftX = -10;
@@ -51,6 +52,7 @@ public class FunctionGraphState extends AbstractEngineState {
         sr = new ShapeRenderer();
         sr.setAutoShapeType(true);
         cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        MNW.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
     }
 
     @Override
