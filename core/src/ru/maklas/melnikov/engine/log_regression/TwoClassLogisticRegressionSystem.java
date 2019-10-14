@@ -62,13 +62,23 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 		double leftX = Utils.camLeftX(cam);
 		double botY = Utils.camBotY(cam);
 		double topY = Utils.camTopY(cam);
-		double step = 3 * cam.zoom;
+		double step = 2 * cam.zoom;
 
-		for (double x = leftX; x < rightX; x += step) {
-			for (double y = botY; y < topY; y += step) {
-				double val = f.f(x, y);
-				sr.setColor(val > 0 ? Color.RED : Color.BLUE);
-				sr.point((float) x, (float) y, 0);
+		if (false) { //Резкое смещение на границе
+			for (double x = leftX; x < rightX; x += step) {
+				for (double y = botY; y < topY; y += step) {
+					double val = f.f(x, y);
+					sr.setColor(val > 0 ? Color.RED : Color.BLUE);
+					sr.point((float) x, (float) y, 0);
+				}
+			}
+		} else {//Плавное смещение по сигмоиде. Совпадает с прогнозированием
+			for (double x = leftX; x < rightX; x += step) {
+				for (double y = botY; y < topY; y += step) {
+					double val = LogisticUtils.sigmoid(f.f(x, y));
+					sr.setColor(((float) val), 0, (float) - val, 1);
+					sr.point((float) x, (float) y, 0);
+				}
 			}
 		}
 		sr.end();

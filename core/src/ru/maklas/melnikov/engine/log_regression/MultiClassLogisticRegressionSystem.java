@@ -86,21 +86,46 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		double botY = Utils.camBotY(cam);
 		double topY = Utils.camTopY(cam);
 		double step = 2 * cam.zoom;
-		//double[] values = new double[functions.size];
+		double[] values = new double[functions.size];
 
-		Color color = new Color();
-		for (double x = leftX; x < rightX; x += step) {
-			for (double y = botY; y < topY; y += step) {
-				color.set(0, 0, 0, 1);
-				boolean meaningfull = false;
-				for (BiFunctionComponent function : functions) {
-					double val = function.fun.f(x, y);
-					if (val < 0) {
-						color.add(function.color);
-						meaningfull = true;
+		if (false){ //Резкое смещение на границе
+			Color color = new Color();
+			for (double x = leftX; x < rightX; x += step) {
+				for (double y = botY; y < topY; y += step) {
+					color.set(0, 0, 0, 1);
+					boolean meaningfull = false;
+					for (BiFunctionComponent function : functions) {
+						double val = function.fun.f(x, y);
+						if (val < 0) {
+							color.add(function.color);
+							meaningfull = true;
+						}
+					}
+					if (meaningfull) {
+						sr.setColor(color);
+						sr.point((float) x, (float) y, 0);
 					}
 				}
-				if (meaningfull) {
+			}
+		} else { //Плавное смещение по сигмоиде. Совпадает с прогнозированием
+			Color color = new Color();
+			for (double x = leftX; x < rightX; x += step) {
+				for (double y = botY; y < topY; y += step) {
+					color.set(0, 0, 0, 1);
+					double sum = 0;
+					for (int i = 0; i < values.length; i++) {
+						double v = LogisticUtils.sigmoid(-functions.get(i).fun.f(x, y));
+						values[i] = v;
+						sum += v;
+					}
+
+					for (int i = 0; i < values.length; i++) {
+						Color c = functions.get(i).color;
+						float percentage = (float)(values[i] / sum);
+						if (percentage > 0) {
+							color.add(c.r * percentage, c.g * percentage, c.b * percentage, 1);
+						}
+					}
 					sr.setColor(color);
 					sr.point((float) x, (float) y, 0);
 				}
