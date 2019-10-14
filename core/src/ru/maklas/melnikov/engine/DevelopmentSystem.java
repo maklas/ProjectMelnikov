@@ -46,9 +46,10 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 	private OrthographicCamera cam;
 	private Parameters parameters;
 	private int iteration = 0;
-	private FloatArray costHistory = new FloatArray();
+	//private FloatArray costHistory = new FloatArray();
 	private double yScale = 1;
 	private ShapeRenderer sr;
+	private boolean trainForAccuracy = false;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
@@ -91,17 +92,16 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 			points.cpyArray().foreach(engine::removeLater);
 			iteration = 0;
-			costHistory.clear();
+			//costHistory.clear();
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-			State state = getEngine().getBundler().get(B.gsmState);
-			State newState = new LogisticRegressionState(Array.with(new Entity().add(new FunctionComponent(new FunctionFromFloats(costHistory)).color(Color.BLACK))), new Parameters());
-			state.getGsm().setCommand(new GSMPush(state, newState, true, true));
+			//State newState = new LogisticRegressionState(Array.with(new Entity().add(new FunctionComponent(new FunctionFromFloats(costHistory)).color(Color.BLACK))), new Parameters());
+			trainForAccuracy = !trainForAccuracy;
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.T) || Gdx.input.isKeyPressed(Input.Keys.Y)) {
 			train();
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.U)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.U) || (trainForAccuracy && getAccuracy() < 0.99 )) {
 			long start = System.currentTimeMillis();
 			while (System.currentTimeMillis() - start < 16) {
 				train();
@@ -198,6 +198,9 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		A.images.font.draw(batch, "Accuracy: " + StringUtils.dfOpt(getAccuracy() * 100, 3), x, y, 10, Align.left, false);
 		y -= 20 * cam.zoom;
 		A.images.font.draw(batch, "LR: " + StringUtils.dfOpt(parameters.getLearningRate(), 10), x, y, 10, Align.left, false);
+		y -= 20 * cam.zoom;
+		A.images.font.setColor(trainForAccuracy ? Color.GREEN : Color.RED);
+		A.images.font.draw(batch, "TFA: " + trainForAccuracy, x, y, 10, Align.left, false);
 		batch.end();
 	}
 
@@ -223,7 +226,7 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		model.th1 -= weightAdjustments.get(1);
 		model.th2 -= weightAdjustments.get(2);
 		iteration++;
-		costHistory.add((float) getCost());
+		//costHistory.add((float) getCost());
 	}
 
 	private Matrix getFeatures(){

@@ -40,6 +40,11 @@ public class LogisticRegressionSetupState extends State {
 	}
 
 	@Override
+	public void resize(int width, int height) {
+		ui.resize(width, height);
+	}
+
+	@Override
     protected void update(float dt) {
 		ui.act(dt);
     }
