@@ -2,12 +2,12 @@ package ru.maklas.melnikov.engine.other;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
+import ru.maklas.melnikov.engine.M;
+import ru.maklas.melnikov.engine.rendering.RenderComponent;
 import ru.maklas.mengine.ComponentMapper;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
 import ru.maklas.mengine.EntitySystem;
-import ru.maklas.melnikov.engine.M;
-import ru.maklas.melnikov.engine.rendering.RenderComponent;
 
 public class TTLSystem extends EntitySystem {
 

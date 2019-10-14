@@ -1,6 +1,5 @@
 package ru.maklas.melnikov.user_interface;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.kotcrab.vis.ui.util.Validators;
 import com.kotcrab.vis.ui.widget.VisLabel;
@@ -17,6 +16,7 @@ public class LogisticRegressionSetupUI extends BaseStage {
 	private final VisValidatableTextField cloudRadiusTextField;
 	private final VisValidatableTextField learningRateTextField;
 	private final VisValidatableTextField cloudSizeTextField;
+	private final VisTextButton multipleButton;
 
 	public LogisticRegressionSetupUI() {
 
@@ -26,6 +26,7 @@ public class LogisticRegressionSetupUI extends BaseStage {
 
 		pointButton = new VisTextButton("Точки");
 		cloudButton = new VisTextButton("Облачка");
+		multipleButton = new VisTextButton("3 класса");
 		cloudSizeTextField = new VisValidatableTextField(Validators.INTEGERS);
 		cloudRadiusTextField = new VisValidatableTextField(Validators.INTEGERS);
 		learningRateTextField = new VisValidatableTextField(Validators.FLOATS);
@@ -35,7 +36,9 @@ public class LogisticRegressionSetupUI extends BaseStage {
 
 		table.add(pointButton).colspan(2);
 		table.row();
-		table.add(cloudButton).colspan(2).padBottom(20);
+		table.add(cloudButton).colspan(2);
+		table.row();
+		table.add(multipleButton).colspan(2).padBottom(20);
 		table.row();
 		table.add(new VisLabel("Размер облачков: ")).padRight(20);
 		table.add(cloudSizeTextField).width(75);
@@ -81,6 +84,10 @@ public class LogisticRegressionSetupUI extends BaseStage {
 
 	public void onCloudButton(Runnable r){
 		cloudButton.addChangeListener(r);
+	}
+
+	public void onMultipleButton(Runnable r){
+		multipleButton.addChangeListener(r);
 	}
 
 }

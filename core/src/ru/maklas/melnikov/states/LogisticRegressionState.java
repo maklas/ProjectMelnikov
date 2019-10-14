@@ -10,19 +10,16 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
 import ru.maklas.libs.Timer;
-import ru.maklas.melnikov.engine.DevelopmentSystem;
-import ru.maklas.melnikov.mnw.MNW;
-import ru.maklas.mengine.*;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.Asset;
-import ru.maklas.melnikov.engine.B;
-import ru.maklas.melnikov.engine.EntityUtils;
-import ru.maklas.melnikov.engine.M;
+import ru.maklas.melnikov.engine.*;
 import ru.maklas.melnikov.engine.functions.FunctionComponent;
 import ru.maklas.melnikov.engine.input.EngineInputAdapter;
 import ru.maklas.melnikov.engine.other.EntityDebugSystem;
 import ru.maklas.melnikov.engine.other.TTLSystem;
 import ru.maklas.melnikov.engine.rendering.*;
+import ru.maklas.melnikov.mnw.MNW;
+import ru.maklas.mengine.*;
 
 public class LogisticRegressionState extends AbstractEngineState {
 
@@ -82,7 +79,7 @@ public class LogisticRegressionState extends AbstractEngineState {
                 .setPrintFunctionNames(true)
                 .setYScale(defaultScale));
         engine.add(new GradientRenderSystem());
-        engine.add(new DevelopmentSystem());
+        engine.add(parameters.getMode() == Parameters.Mode.MULTIPLE ? new ThreeClassLogisticRegressionSystem() : new TwoClassLogisticRegressionSystem());
         engine.add(new BiFunctionRenderSystem());
     }
 

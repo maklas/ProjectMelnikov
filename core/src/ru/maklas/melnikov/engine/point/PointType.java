@@ -4,21 +4,22 @@ import com.badlogic.gdx.graphics.Color;
 
 public enum  PointType {
 
-	RED, BLUE, UNKNOWN;
+	BLUE, RED, GREEN, UNKNOWN;
 
 	public Color getColor() {
 		switch (this) {
 			case RED: return Color.RED;
 			case BLUE: return Color.BLUE;
+			case GREEN: return Color.GREEN;
 			default: return Color.WHITE;
 		}
 	}
 
 	public int getClassification() {
-
 		switch (this){
-			case RED: return 1;
 			case BLUE: return 0;
+			case RED: return 1;
+			case GREEN: return 2;
 			default: throw new RuntimeException("");
 		}
 	}

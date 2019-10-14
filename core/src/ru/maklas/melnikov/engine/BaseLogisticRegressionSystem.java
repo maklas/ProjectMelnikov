@@ -11,15 +11,11 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ImmutableArray;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.ImageAssets;
-import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
 import ru.maklas.melnikov.engine.input.TouchUpEvent;
 import ru.maklas.melnikov.engine.point.PointComponent;
 import ru.maklas.melnikov.engine.point.PointType;
 import ru.maklas.melnikov.engine.rendering.YScalable;
-import ru.maklas.melnikov.functions.bi_functions.GraphBiFunction;
-import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
 import ru.maklas.melnikov.states.Parameters;
-import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.StringUtils;
 import ru.maklas.melnikov.utils.Utils;
 import ru.maklas.melnikov.utils.math.DoubleArray;
@@ -31,23 +27,21 @@ import ru.maklas.mengine.RenderEntitySystem;
 
 import java.util.Random;
 
-public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
+public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem implements YScalable {
 
-	private ImmutableArray<Entity> points;
-	private ImmutableArray<Entity> biFunctions;
-	private Batch batch;
-	private OrthographicCamera cam;
-	private Parameters parameters;
-	private int iteration = 0;
-	private double yScale = 1;
-	private ShapeRenderer sr;
-	private boolean trainForAccuracy = false;
+	protected ImmutableArray<Entity> points;
+	protected Batch batch;
+	protected OrthographicCamera cam;
+	protected Parameters parameters;
+	protected int iteration = 0;
+	protected double yScale = 1;
+	protected ShapeRenderer sr;
+	protected boolean trainForAccuracy = false;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
 		points = entitiesFor(PointComponent.class);
 		subscribe(TouchUpEvent.class, this::onTouch);
-		biFunctions = entitiesFor(BiFunctionComponent.class);
 		batch = engine.getBundler().get(B.batch);
 		sr = engine.getBundler().get(B.sr);
 		cam = engine.getBundler().get(B.cam);
@@ -55,13 +49,20 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 	}
 
 	private void onTouch(TouchUpEvent e) {
-		PointType type = e.getButton() == Input.Buttons.LEFT ? PointType.BLUE : (e.getButton() == Input.Buttons.RIGHT ? PointType.RED : PointType.GREEN);
+		PointType type = e.getButton() == Input.Buttons.LEFT
+				? PointType.BLUE
+				: (e.getButton() == Input.Buttons.RIGHT
+				? PointType.RED : PointType.GREEN);
+		if (type == PointType.GREEN && parameters.getMode() != Parameters.Mode.MULTIPLE){
+			return;
+		}
 
 		switch (parameters.getMode()) {
 			case POINT:
 				engine.add(new Entity(e.getX(), e.getY(), 0).add(new PointComponent(type)));
 				break;
 			case CLOUD:
+			case MULTIPLE:
 				Random random = new Random();
 				double diameter = parameters.getCloudRadius() * 2 * cam.zoom;
 				for (int i = 0; i < parameters.getCloudSize(); i++) {
@@ -73,13 +74,24 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		}
 	}
 
-	private double getCost() {
-		return LogisticUtils.logisticCost(getFeatures(), getLabels(), getWeights());
+	@Override
+	public EntitySystem setYScale(double yScale) {
+		this.yScale = yScale;
+		return this;
 	}
 
-	private double getAccuracy() {
-		return LogisticUtils.accuracy(getFeatures(), getLabels(), getWeights());
-	}
+	protected abstract void train();
+
+	protected abstract double getAccuracy();
+
+	/** translucent marks of separated lines **/
+	protected abstract void drawSides();
+
+	/** average cost for all points **/
+	protected abstract double getCost();
+
+	/** Cost for specific point **/
+	protected abstract double getCost(Entity point);
 
 	@Override
 	public void render() {
@@ -106,28 +118,6 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		drawIterationAndCost();
 	}
 
-	private void drawSides() {
-		GraphBiFunction f = getFunction();
-		if (f == null) return;
-
-		sr.begin(ShapeRenderer.ShapeType.Point);
-
-		double rightX = Utils.camRightX(cam);
-		double leftX = Utils.camLeftX(cam);
-		double botY = Utils.camBotY(cam);
-		double topY = Utils.camTopY(cam);
-		double step = 3 * cam.zoom;
-
-		for (double x = leftX; x < rightX; x += step) {
-			for (double y = botY; y < topY; y += step) {
-				double val = f.f(x, y);
-				sr.setColor(val > 0 ? Color.RED : Color.BLUE);
-				sr.point((float) x, (float) y, 0);
-			}
-		}
-		sr.end();
-	}
-
 	private void drawPoints() {
 		batch.begin();
 
@@ -146,8 +136,6 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 
 	private void drawCostsForPoints() {
 		if (points.size() == 0) return;
-		GraphBiFunction f = getFunction();
-		if (f == null) return;
 		Vector2 mouse = Utils.getMouse(cam);
 		Entity closestPoint = points.first();
 		float minDst2 = mouse.dst2(closestPoint.x, closestPoint.y);
@@ -167,8 +155,7 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		A.images.font.setColor(closestPoint.get(M.point).getColor());
 		batch.begin();
 		Vector2 pos = Utils.vec1.set(closestPoint.x, closestPoint.y);
-		double value = LogisticUtils.sigmoid(f.f(closestPoint.x, closestPoint.y));
-		double cost = LogisticUtils.logisticCost(value, closestPoint.get(M.point).type.getClassification());
+		double cost = getCost(closestPoint);
 		A.images.font.draw(batch, StringUtils.vec(pos, 2) + " | " + StringUtils.dfOpt(cost, 4), pos.x, pos.y, 10, Align.left, false);
 		batch.end();
 	}
@@ -191,71 +178,12 @@ public class DevelopmentSystem extends RenderEntitySystem implements YScalable {
 		batch.end();
 	}
 
-	private GraphBiFunction getFunction(){
-		if (biFunctions.size() == 0) return null;
-		return biFunctions.get(0).get(M.biFun).fun;
-	}
-
-	private void train() {
-		if (biFunctions.size() < 1) return;
-		if (points.size() < 3) return;
-		if (biFunctions.size() == 3) {
-			testMultipleLearn();
-			return;
-		}
-		GraphBiFunction biFun = biFunctions.get(0).get(M.biFun).fun;
-		if (!(biFun instanceof LogisticBiFunction)) return;
-		LogisticBiFunction model = (LogisticBiFunction) biFun;
-
-		Matrix features = new Matrix();
-		DoubleArray labels = new DoubleArray(points.size());
-		DoubleArray weights = DoubleArray.with(model.th0, model.th1, model.th2);
-
-		for (int i = 0; i < points.size(); i++) {
-			Entity p = points.get(i);
-			features.addRow(DoubleArray.with(1, p.x, p.y));
-			labels.add(p.get(M.point).type.getClassification());
-		}
-
-		DoubleArray weightAdjustments = LogisticUtils.gradientDescent(features, labels, weights, 0.1);
-		model.th0 -= weightAdjustments.get(0);
-		model.th1 -= weightAdjustments.get(1);
-		model.th2 -= weightAdjustments.get(2);
-		iteration++;
-	}
-
-	private void testMultipleLearn() {
-	}
-
-	private Matrix getFeatures(){
+	protected Matrix getFeatures(){
 		Matrix features = new Matrix();
 		for (int i = 0; i < points.size(); i++) {
 			Entity p = points.get(i);
 			features.addRow(DoubleArray.with(1, p.x, p.y));
 		}
 		return features;
-	}
-
-	private DoubleArray getLabels(){
-		DoubleArray labels = new DoubleArray();
-		for (int i = 0; i < points.size(); i++) {
-			Entity p = points.get(i);
-			labels.add(p.get(M.point).type.getClassification());
-		}
-		return labels;
-	}
-
-	private DoubleArray getWeights(){
-		if (biFunctions.size() < 1) return null;
-		GraphBiFunction biFun = biFunctions.get(0).get(M.biFun).fun;
-		if (!(biFun instanceof LogisticBiFunction)) return null;
-		LogisticBiFunction model = (LogisticBiFunction) biFun;
-		return DoubleArray.with(model.th0, model.th1, model.th2);
-	}
-
-	@Override
-	public EntitySystem setYScale(double yScale) {
-		this.yScale = yScale;
-		return this;
 	}
 }

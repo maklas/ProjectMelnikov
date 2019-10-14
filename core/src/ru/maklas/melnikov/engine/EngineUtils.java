@@ -5,12 +5,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
-import ru.maklas.mengine.Engine;
-import ru.maklas.mengine.Entity;
 import ru.maklas.melnikov.engine.rendering.Animation;
 import ru.maklas.melnikov.engine.rendering.AnimationComponent;
 import ru.maklas.melnikov.engine.rendering.RenderComponent;
 import ru.maklas.melnikov.engine.rendering.TextureUnit;
+import ru.maklas.mengine.Engine;
+import ru.maklas.mengine.Entity;
 
 public class EngineUtils {
 

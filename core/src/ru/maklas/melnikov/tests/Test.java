@@ -4,9 +4,6 @@ package ru.maklas.melnikov.tests;
 import com.badlogic.gdx.math.Vector2;
 import ru.maklas.melnikov.mnw.MNW;
 import ru.maklas.melnikov.utils.ClassUtils;
-import ru.maklas.melnikov.utils.LogisticUtils;
-import ru.maklas.melnikov.utils.StringUtils;
-import ru.maklas.melnikov.utils.Utils;
 import ru.maklas.melnikov.utils.math.DoubleArray;
 import ru.maklas.melnikov.utils.math.Matrix;
 

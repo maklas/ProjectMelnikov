@@ -2,9 +2,9 @@ package ru.maklas.melnikov.engine.physics;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import ru.maklas.mengine.Entity;
 import ru.maklas.melnikov.engine.other.Event;
 import ru.maklas.melnikov.engine.physics.world_listeners.PreCollisionEvent;
+import ru.maklas.mengine.Entity;
 
 /**
  * Ивент о коллизии. Зовётся после world.step(), так что можно спокойной взаимодействовать с физикой.

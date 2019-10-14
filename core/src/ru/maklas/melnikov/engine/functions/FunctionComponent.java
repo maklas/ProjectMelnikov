@@ -1,8 +1,8 @@
 package ru.maklas.melnikov.engine.functions;
 
 import com.badlogic.gdx.graphics.Color;
-import ru.maklas.mengine.Component;
 import ru.maklas.melnikov.functions.GraphFunction;
+import ru.maklas.mengine.Component;
 
 public class FunctionComponent implements Component {
 

@@ -3,10 +3,10 @@ package ru.maklas.melnikov.engine.physics;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import ru.maklas.mengine.Component;
-import ru.maklas.mengine.Entity;
 import ru.maklas.melnikov.statics.Game;
 import ru.maklas.melnikov.utils.StringUtils;
+import ru.maklas.mengine.Component;
+import ru.maklas.mengine.Entity;
 
 /**
  * Компонент привязывающий {@link Entity} к Box2d's {@link Body}.

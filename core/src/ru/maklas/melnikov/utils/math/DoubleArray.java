@@ -1,7 +1,6 @@
 package ru.maklas.melnikov.utils.math;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.MapFunction;
 import com.badlogic.gdx.utils.Predicate;
 import com.badlogic.gdx.utils.StringBuilder;
 

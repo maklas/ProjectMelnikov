@@ -2,9 +2,9 @@ package ru.maklas.melnikov.engine.physics.world_listeners;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import ru.maklas.melnikov.statics.Game;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
-import ru.maklas.melnikov.statics.Game;
 
 /**
  * Работает в паре с PhysicsSystem. Генерирует PreCollisionEvent.

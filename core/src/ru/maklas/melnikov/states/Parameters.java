@@ -2,7 +2,7 @@ package ru.maklas.melnikov.states;
 
 public class Parameters {
 
-	public enum Mode {POINT, CLOUD}
+	public enum Mode {POINT, CLOUD, MULTIPLE}
 
 	private Mode mode = Mode.CLOUD;
 	private double cloudRadius = 7.5;

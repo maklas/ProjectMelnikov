@@ -33,7 +33,7 @@ public class LogisticUtils {
 		} else if (target == 0){
 			return -Math.log(1 - value);
 		} else {
-			throw new RuntimeException("Bad input: " + target);
+			return 0;//todonew RuntimeException("Bad input: " + target);
 		}
 	}
 

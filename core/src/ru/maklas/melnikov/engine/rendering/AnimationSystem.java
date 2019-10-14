@@ -3,10 +3,10 @@ package ru.maklas.melnikov.engine.rendering;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
+import ru.maklas.melnikov.engine.M;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
 import ru.maklas.mengine.EntitySystem;
-import ru.maklas.melnikov.engine.M;
 
 /**
  * Производит обновления всех анимаций.

@@ -4,13 +4,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import ru.maklas.mengine.Engine;
-import ru.maklas.mengine.Entity;
-import ru.maklas.mengine.IterableZSortedRenderSystem;
 import ru.maklas.melnikov.engine.B;
 import ru.maklas.melnikov.statics.Layers;
 import ru.maklas.melnikov.utils.Config;
 import ru.maklas.melnikov.utils.Log;
+import ru.maklas.mengine.Engine;
+import ru.maklas.mengine.Entity;
+import ru.maklas.mengine.IterableZSortedRenderSystem;
 
 /**
  * Рендерит все RenderComponent у всех Entity на экран.

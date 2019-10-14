@@ -4,8 +4,8 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
-import ru.maklas.mengine.Engine;
 import ru.maklas.melnikov.utils.Utils;
+import ru.maklas.mengine.Engine;
 
 public class EngineInputAdapter implements InputProcessor {
 

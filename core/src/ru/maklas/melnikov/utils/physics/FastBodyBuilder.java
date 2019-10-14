@@ -4,10 +4,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Shape;
-import ru.maklas.mengine.Entity;
 import ru.maklas.melnikov.engine.physics.PhysicsComponent;
 import ru.maklas.melnikov.statics.EntityType;
 import ru.maklas.melnikov.utils.Log;
+import ru.maklas.mengine.Entity;
 
 public class FastBodyBuilder {
 

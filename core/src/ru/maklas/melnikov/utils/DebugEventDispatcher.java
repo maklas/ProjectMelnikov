@@ -1,7 +1,7 @@
 package ru.maklas.melnikov.utils;
 
-import ru.maklas.mengine.utils.EventDispatcher;
 import ru.maklas.melnikov.engine.other.Dispatchable;
+import ru.maklas.mengine.utils.EventDispatcher;
 
 public class DebugEventDispatcher extends EventDispatcher {
 

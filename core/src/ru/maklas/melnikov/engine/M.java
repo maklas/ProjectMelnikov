@@ -4,17 +4,17 @@ package ru.maklas.melnikov.engine;
 import com.badlogic.gdx.utils.ObjectMap;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
 import ru.maklas.melnikov.engine.functions.FunctionComponent;
-import ru.maklas.melnikov.engine.point.PointComponent;
-import ru.maklas.mengine.ComponentMapper;
-import ru.maklas.mengine.Engine;
-import ru.maklas.mengine.EntitySystem;
-import ru.maklas.mengine.UpdatableEntitySystem;
 import ru.maklas.melnikov.engine.other.EntityDebugSystem;
 import ru.maklas.melnikov.engine.other.TTLComponent;
 import ru.maklas.melnikov.engine.other.TTLSystem;
 import ru.maklas.melnikov.engine.physics.PhysicsComponent;
 import ru.maklas.melnikov.engine.physics.PhysicsSystem;
+import ru.maklas.melnikov.engine.point.PointComponent;
 import ru.maklas.melnikov.engine.rendering.*;
+import ru.maklas.mengine.ComponentMapper;
+import ru.maklas.mengine.Engine;
+import ru.maklas.mengine.EntitySystem;
+import ru.maklas.mengine.UpdatableEntitySystem;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -61,7 +61,7 @@ public class M {
         map.put(PointRenderSystem.class, i++);
 
         map.put(BiFunctionRenderSystem.class, i++);
-        map.put(DevelopmentSystem.class, i++);
+        map.put(BaseLogisticRegressionSystem.class, i++);
     }
 
     /** Устанавливаем длинну массива Entity.components[] в зависимости от количества компонентов. **/

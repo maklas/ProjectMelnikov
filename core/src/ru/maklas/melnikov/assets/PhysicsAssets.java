@@ -6,9 +6,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Predicate;
-import ru.maklas.mengine.Entity;
 import ru.maklas.melnikov.statics.Game;
 import ru.maklas.melnikov.utils.physics.Builders;
+import ru.maklas.mengine.Entity;
 
 public class PhysicsAssets extends Asset {
 

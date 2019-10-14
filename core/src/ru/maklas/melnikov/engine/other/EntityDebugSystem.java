@@ -14,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
-import ru.maklas.mengine.*;
 import ru.maklas.melnikov.assets.ImageAssets;
 import ru.maklas.melnikov.engine.B;
 import ru.maklas.melnikov.engine.M;
@@ -28,6 +27,7 @@ import ru.maklas.melnikov.utils.FloatAverager;
 import ru.maklas.melnikov.utils.StringUtils;
 import ru.maklas.melnikov.utils.TimeSlower;
 import ru.maklas.melnikov.utils.Utils;
+import ru.maklas.mengine.*;
 
 /**
  * <li><b>Requires:</b> cam, batch

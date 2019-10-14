@@ -9,13 +9,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ImmutableArray;
+import ru.maklas.melnikov.engine.M;
+import ru.maklas.melnikov.utils.NoCaseException;
+import ru.maklas.melnikov.utils.Utils;
 import ru.maklas.mengine.ComponentMapper;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
 import ru.maklas.mengine.EntitySystem;
-import ru.maklas.melnikov.engine.M;
-import ru.maklas.melnikov.utils.NoCaseException;
-import ru.maklas.melnikov.utils.Utils;
 
 /**
  * Created by Danil on 27.10.2017.

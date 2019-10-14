@@ -4,8 +4,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.utils.Array;
-import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
-import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
 import ru.maklas.melnikov.mnw.MNW;
 import ru.maklas.melnikov.user_interface.LogisticRegressionSetupUI;
 import ru.maklas.melnikov.utils.gsm_lib.State;
@@ -21,11 +19,11 @@ public class LogisticRegressionSetupState extends State {
 
 		ui.onPointButton(() -> launch(Parameters.Mode.POINT));
 		ui.onCloudButton(() -> launch(Parameters.Mode.CLOUD));
+		ui.onMultipleButton(() -> launch(Parameters.Mode.MULTIPLE));
     }
 
     private void launch(Parameters.Mode mode){
 		Array<Entity> entities = new Array<>();
-		entities.add(new Entity().add(new BiFunctionComponent(new LogisticBiFunction(1, 1, 1)).setColor(Color.BLACK)));
 		Parameters parameters = new Parameters();
 		parameters.setCloudRadius(ui.getCloudRadius());
 		parameters.setCloudSize(ui.getCloudSize());

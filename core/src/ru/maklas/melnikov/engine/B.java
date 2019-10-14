@@ -4,15 +4,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.physics.box2d.World;
-import ru.maklas.libs.Counter;
 import ru.maklas.melnikov.states.Parameters;
-import ru.maklas.mengine.Bundler;
-import ru.maklas.mengine.BundlerKey;
-import ru.maklas.melnikov.statics.ID;
-import ru.maklas.melnikov.utils.Profiler;
 import ru.maklas.melnikov.utils.TimeSlower;
 import ru.maklas.melnikov.utils.gsm_lib.State;
 import ru.maklas.melnikov.utils.physics.Builders;
+import ru.maklas.mengine.BundlerKey;
 
 /** Для Engine.bundler **/
 public class B {

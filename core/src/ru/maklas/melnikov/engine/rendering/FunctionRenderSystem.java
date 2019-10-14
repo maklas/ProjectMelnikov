@@ -11,9 +11,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ImmutableArray;
-import ru.maklas.mengine.Engine;
-import ru.maklas.mengine.Entity;
-import ru.maklas.mengine.RenderEntitySystem;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.engine.B;
 import ru.maklas.melnikov.engine.M;
@@ -21,6 +18,9 @@ import ru.maklas.melnikov.engine.functions.FunctionComponent;
 import ru.maklas.melnikov.functions.GraphFunction;
 import ru.maklas.melnikov.utils.StringUtils;
 import ru.maklas.melnikov.utils.Utils;
+import ru.maklas.mengine.Engine;
+import ru.maklas.mengine.Entity;
+import ru.maklas.mengine.RenderEntitySystem;
 
 public class FunctionRenderSystem extends RenderEntitySystem{
 
