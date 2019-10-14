@@ -430,7 +430,7 @@ public class DoubleArray {
 	public double sumMultiplication(DoubleArray other){
 		if (size != other.size) throw new RuntimeException("Sizes don't match " + size + " != " + other.size);
 		if (size == 0) return 0;
-		int sum = 0;
+		double sum = 0;
 		for (int i = 0; i < size; i++) {
 			sum += items[i] * other.items[i];
 		}

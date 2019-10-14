@@ -1,10 +1,11 @@
-package ru.maklas.melnikov.engine;
+package ru.maklas.melnikov.engine.log_regression;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import ru.maklas.melnikov.engine.M;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
+import ru.maklas.melnikov.functions.bi_functions.CircleBiFunction;
 import ru.maklas.melnikov.functions.bi_functions.GraphBiFunction;
-import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
 import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.Utils;
 import ru.maklas.melnikov.utils.math.DoubleArray;
@@ -12,21 +13,21 @@ import ru.maklas.melnikov.utils.math.Matrix;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
 
-public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSystem {
+public class CircleLogisticRegressionSystem extends BaseLogisticRegressionSystem {
 
 	private BiFunctionComponent bfc;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
 		super.onAddedToEngine(engine);
-		bfc = new BiFunctionComponent(new LogisticBiFunction(1, 1, 1)).setColor(Color.BLACK);
+		bfc = new BiFunctionComponent(new CircleBiFunction(1, 1, 1)).setColor(Color.BLACK);
 		engine.add(new Entity().add(bfc));
 	}
 
 	@Override
 	protected void train() {
 		if (points.size() < 2) return;
-		LogisticBiFunction model = (LogisticBiFunction) bfc.fun;
+		CircleBiFunction model = (CircleBiFunction) bfc.fun;
 
 		Matrix features = new Matrix();
 		DoubleArray labels = new DoubleArray(points.size());
@@ -78,7 +79,7 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 
 	@Override
 	protected double getCost(Entity point) {
-		double value = bfc.fun.f(point.x, point.y);
+		double value = LogisticUtils.sigmoidNoInfinity(bfc.fun.f(point.x, point.y));
 		int target = point.get(M.point).type.getClassification();
 		return LogisticUtils.logisticCost(value, target);
 	}
@@ -93,7 +94,7 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 	}
 
 	private DoubleArray getWeights(){
-		LogisticBiFunction model = (LogisticBiFunction) bfc.fun;
+		CircleBiFunction model = (CircleBiFunction) bfc.fun;
 		return DoubleArray.with(model.th0, model.th1, model.th2);
 	}
 }

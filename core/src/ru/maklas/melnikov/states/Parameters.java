@@ -2,12 +2,15 @@ package ru.maklas.melnikov.states;
 
 public class Parameters {
 
-	public enum Mode {POINT, CLOUD, MULTIPLE}
 
+
+	public enum Mode {POINT, CLOUD, MULTIPLE, CIRCLE;}
 	private Mode mode = Mode.CLOUD;
+
 	private double cloudRadius = 7.5;
 	private int cloudSize = 100;
 	private double learningRate = 0.01;
+	private int classCount = 3;
 
 	public Mode getMode() {
 		return mode;
@@ -39,5 +42,13 @@ public class Parameters {
 
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
+	}
+
+	public int getClassCount() {
+		return classCount;
+	}
+
+	public void setClassCount(int classCount) {
+		this.classCount = classCount;
 	}
 }

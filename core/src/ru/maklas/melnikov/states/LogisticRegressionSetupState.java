@@ -19,6 +19,7 @@ public class LogisticRegressionSetupState extends State {
 
 		ui.onPointButton(() -> launch(Parameters.Mode.POINT));
 		ui.onCloudButton(() -> launch(Parameters.Mode.CLOUD));
+		ui.onCircleButton(() -> launch(Parameters.Mode.CIRCLE));
 		ui.onMultipleButton(() -> launch(Parameters.Mode.MULTIPLE));
     }
 
@@ -29,6 +30,7 @@ public class LogisticRegressionSetupState extends State {
 		parameters.setCloudSize(ui.getCloudSize());
 		parameters.setLearningRate(ui.getLearningRate());
 		parameters.setMode(mode);
+		parameters.setClassCount(ui.getClassCount());
 		pushState(new LogisticRegressionState(entities, parameters));
 	}
 

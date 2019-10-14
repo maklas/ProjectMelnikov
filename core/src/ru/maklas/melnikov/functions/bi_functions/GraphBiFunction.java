@@ -4,14 +4,14 @@ import ru.maklas.melnikov.functions.GraphFunction;
 
 public abstract class GraphBiFunction {
 
-    public abstract double f(double x1, double y);
+    public abstract double f(double x, double y);
 
-    public double g(double x1, double y) {
-        return f(x1, y);
+    public double g(double x, double y) {
+        return f(x, y);
     }
 
-    public final double absF(double x1, double y){
-        return Math.abs(f(x1, y));
+    public final double absF(double x, double y){
+        return Math.abs(f(x, y));
     }
 
     public final GraphFunction lockX(double x){

@@ -1,11 +1,9 @@
 package ru.maklas.melnikov.user_interface;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.kotcrab.vis.ui.util.Validators;
-import com.kotcrab.vis.ui.widget.VisLabel;
-import com.kotcrab.vis.ui.widget.VisTable;
-import com.kotcrab.vis.ui.widget.VisTextButton;
-import com.kotcrab.vis.ui.widget.VisValidatableTextField;
+import com.kotcrab.vis.ui.widget.*;
 import ru.maklas.melnikov.states.Parameters;
 import ru.maklas.melnikov.utils.StringUtils;
 
@@ -17,6 +15,8 @@ public class LogisticRegressionSetupUI extends BaseStage {
 	private final VisValidatableTextField learningRateTextField;
 	private final VisValidatableTextField cloudSizeTextField;
 	private final VisTextButton multipleButton;
+	private final VisTextButton circleButton;
+	private final VisSlider classNumberSlider;
 
 	public LogisticRegressionSetupUI() {
 
@@ -26,10 +26,12 @@ public class LogisticRegressionSetupUI extends BaseStage {
 
 		pointButton = new VisTextButton("Точки");
 		cloudButton = new VisTextButton("Облачка");
-		multipleButton = new VisTextButton("3 класса");
+		circleButton = new VisTextButton("Круг");
+		multipleButton = new VisTextButton("Мульти-класс");
 		cloudSizeTextField = new VisValidatableTextField(Validators.INTEGERS);
 		cloudRadiusTextField = new VisValidatableTextField(Validators.INTEGERS);
 		learningRateTextField = new VisValidatableTextField(Validators.FLOATS);
+		classNumberSlider = new VisSlider(3, 5, 1, false);
 
 
 		table.defaults().padBottom(5);
@@ -37,6 +39,8 @@ public class LogisticRegressionSetupUI extends BaseStage {
 		table.add(pointButton).colspan(2);
 		table.row();
 		table.add(cloudButton).colspan(2);
+		table.row();
+		table.add(circleButton).colspan(2);
 		table.row();
 		table.add(multipleButton).colspan(2).padBottom(20);
 		table.row();
@@ -49,11 +53,15 @@ public class LogisticRegressionSetupUI extends BaseStage {
 		table.add(new VisLabel("Learning rate: ")).padRight(20);
 		table.add(learningRateTextField).width(75);
 		table.row();
+		table.add(new VisLabel("Классы: ")).padRight(20);
+		table.add(classNumberSlider).width(75);
+		table.row();
 
 		Parameters defaultParameters = new Parameters();
 		cloudSizeTextField.setText(String.valueOf(defaultParameters.getCloudSize()));
 		cloudRadiusTextField.setText(String.valueOf(((int) defaultParameters.getCloudRadius())));
 		learningRateTextField.setText(String.valueOf(defaultParameters.getLearningRate()));
+		classNumberSlider.setValue(defaultParameters.getClassCount());
 	}
 
 	public int getCloudRadius(){
@@ -66,6 +74,10 @@ public class LogisticRegressionSetupUI extends BaseStage {
 
 	public int getCloudSize(){
 		return parseInt(cloudSizeTextField.getText());
+	}
+
+	public int getClassCount(){
+		return MathUtils.round(classNumberSlider.getValue());
 	}
 
 	private int parseInt(String s){
@@ -84,6 +96,10 @@ public class LogisticRegressionSetupUI extends BaseStage {
 
 	public void onCloudButton(Runnable r){
 		cloudButton.addChangeListener(r);
+	}
+
+	public void onCircleButton(Runnable r){
+		circleButton.addChangeListener(r);
 	}
 
 	public void onMultipleButton(Runnable r){

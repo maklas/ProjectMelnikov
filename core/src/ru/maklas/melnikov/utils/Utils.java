@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.LongMapFunction;
+import com.badlogic.gdx.utils.MapFunction;
 import com.badlogic.gdx.utils.Pool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -310,10 +311,31 @@ public class Utils {
         if (keyExtractor == null) throw new NullPointerException();
         return (Comparator<T>) (c1, c2) -> compare((int)keyExtractor.map(c1), (int)keyExtractor.map(c2));
     }
+    @SuppressWarnings("all")
+    public static <T> Comparator<T> comparingDouble(MapFunction<? super T, Double> keyExtractor) {
+        if (keyExtractor == null) throw new NullPointerException();
+        return (Comparator<T>) (c1, c2) -> compare(keyExtractor.map(c1), keyExtractor.map(c2));
+    }
 
     @SuppressWarnings("all")
     public static int compare(int x, int y) {
         return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    }
+
+    @SuppressWarnings("all")
+    public static int compare(double d1, double d2) {
+        if (d1 < d2)
+            return -1;           // Neither val is NaN, thisVal is smaller
+        if (d1 > d2)
+            return 1;            // Neither val is NaN, thisVal is larger
+
+        // Cannot use doubleToRawLongBits because of possibility of NaNs.
+        long thisBits    = Double.doubleToLongBits(d1);
+        long anotherBits = Double.doubleToLongBits(d2);
+
+        return (thisBits == anotherBits ?  0 : // Values are equal
+                (thisBits < anotherBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
+                        1));                          // (0.0, -0.0) or (NaN, !NaN)
     }
 
     public static <T> Comparator<T> reverseComparator(Comparator<T> c){

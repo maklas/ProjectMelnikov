@@ -27,15 +27,15 @@ public class SerovNashBiFunction extends GraphBiFunction {
     }
 
     @Override
-    public double f(double x1, double y) {
-        double left = x1 - x;
+    public double f(double x, double y) {
+        double left = x - this.x;
         double right = y - this.y;
         return xA * (left * left) + yA * (right * right);
     }
 
     @Override
-    public double g(double x1, double y) {
-        double dx = (2 * xA) * (x1 - x);
+    public double g(double x, double y) {
+        double dx = (2 * xA) * (x - this.x);
         double dy = (2 * yA) * (y - this.y);
         return Math.sqrt(dx * dx + dy * dy);
     }

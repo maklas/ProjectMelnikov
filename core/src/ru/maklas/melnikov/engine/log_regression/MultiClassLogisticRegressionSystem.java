@@ -1,11 +1,15 @@
-package ru.maklas.melnikov.engine;
+package ru.maklas.melnikov.engine.log_regression;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import ru.maklas.melnikov.engine.M;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
 import ru.maklas.melnikov.engine.point.PointType;
 import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
+import ru.maklas.melnikov.utils.Log;
 import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.Utils;
 import ru.maklas.melnikov.utils.math.DoubleArray;
@@ -13,22 +17,29 @@ import ru.maklas.melnikov.utils.math.Matrix;
 import ru.maklas.mengine.Engine;
 import ru.maklas.mengine.Entity;
 
-public class ThreeClassLogisticRegressionSystem extends BaseLogisticRegressionSystem {
+public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSystem {
 
 	private Array<BiFunctionComponent> functions;
 	private Array<PointType> typeOrder;
+	private int classCount;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
 		super.onAddedToEngine(engine);
 		functions = new Array<>();
 		typeOrder = new Array<>();
-		for (int i = 0; i < 3; i++) {
+
+		Vector2 vec = new Vector2(0, 1).rotate(15);
+		classCount = MathUtils.clamp(parameters.getClassCount(), 3, 5);
+		float rotation = 360.0f / classCount;
+
+		for (int i = 0; i < classCount; i++) {
 			PointType type = PointType.values()[i];
-			BiFunctionComponent bfc = new BiFunctionComponent(new LogisticBiFunction(1, (i - 0.67) * 3, 1)).setColor(type.getColor());
+			BiFunctionComponent bfc = new BiFunctionComponent(new LogisticBiFunction(1, vec.x, vec.y)).setColor(type.getColor());
 			engine.add(new Entity().add(bfc));
 			functions.add(bfc);
 			typeOrder.add(type);
+			vec.rotate(rotation);
 		}
 	}
 
@@ -75,6 +86,7 @@ public class ThreeClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		double botY = Utils.camBotY(cam);
 		double topY = Utils.camTopY(cam);
 		double step = 2 * cam.zoom;
+		//double[] values = new double[functions.size];
 
 		Color color = new Color();
 		for (double x = leftX; x < rightX; x += step) {
@@ -141,4 +153,23 @@ public class ThreeClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		return point.get(M.point).type == type ? 0 : 1;
 	}
 
+	@Override
+	protected void addPoint(PointType type, double x, double y) {
+		if (type.ordinal() >= classCount) return;
+		super.addPoint(type, x, y);
+	}
+
+	@Override
+	protected Array<KeyValuePair<PointType, Double>> getPredictions(double x, double y) {
+		double sum = 0;
+		Array<KeyValuePair<PointType, Double>> array = new Array<>();
+		for (PointType pointType : typeOrder) {
+			double prediction = 1 - LogisticUtils.prediction(DoubleArray.with(1, x, y), getWeights(pointType));
+			array.add(new KeyValuePair<>(pointType, prediction));
+			sum += prediction;
+		}
+		double multiplication = 1.0 / sum;
+		array.foreach(pair -> pair.value *= multiplication);
+		return array;
+	}
 }

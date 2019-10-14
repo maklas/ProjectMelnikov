@@ -4,6 +4,7 @@ package ru.maklas.melnikov.engine;
 import com.badlogic.gdx.utils.ObjectMap;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
 import ru.maklas.melnikov.engine.functions.FunctionComponent;
+import ru.maklas.melnikov.engine.log_regression.BaseLogisticRegressionSystem;
 import ru.maklas.melnikov.engine.other.EntityDebugSystem;
 import ru.maklas.melnikov.engine.other.TTLComponent;
 import ru.maklas.melnikov.engine.other.TTLSystem;

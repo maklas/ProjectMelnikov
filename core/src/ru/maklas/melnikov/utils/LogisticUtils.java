@@ -27,6 +27,10 @@ public class LogisticUtils {
 		return predictions;
 	}
 
+	public static double prediction(DoubleArray features, DoubleArray weights){
+		return sigmoid(features.sumMultiplication(weights));
+	}
+
 	public static double logisticCost(double value, int target) {
 		if (target == 1){
 			return -Math.log(value);

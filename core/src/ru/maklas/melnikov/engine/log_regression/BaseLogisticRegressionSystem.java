@@ -1,16 +1,22 @@
-package ru.maklas.melnikov.engine;
+package ru.maklas.melnikov.engine.log_regression;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ImmutableArray;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.ImageAssets;
+import ru.maklas.melnikov.engine.B;
+import ru.maklas.melnikov.engine.M;
+import ru.maklas.melnikov.engine.input.KeyTypeEvent;
 import ru.maklas.melnikov.engine.input.TouchUpEvent;
 import ru.maklas.melnikov.engine.point.PointComponent;
 import ru.maklas.melnikov.engine.point.PointType;
@@ -25,6 +31,8 @@ import ru.maklas.mengine.Entity;
 import ru.maklas.mengine.EntitySystem;
 import ru.maklas.mengine.RenderEntitySystem;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Random;
 
 public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem implements YScalable {
@@ -37,15 +45,48 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 	protected double yScale = 1;
 	protected ShapeRenderer sr;
 	protected boolean trainForAccuracy = false;
+	protected EnumMap<PointType, Integer> pointCounts;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
+		pointCounts = new EnumMap<>(PointType.class);
 		points = entitiesFor(PointComponent.class);
 		subscribe(TouchUpEvent.class, this::onTouch);
+		subscribe(KeyTypeEvent.class, this::onKeyType);
 		batch = engine.getBundler().get(B.batch);
 		sr = engine.getBundler().get(B.sr);
 		cam = engine.getBundler().get(B.cam);
 		parameters = engine.getBundler().get(B.params);
+	}
+
+	private void onKeyType(KeyTypeEvent e) {
+		char character = e.getCharacter();
+		if (!Character.isDigit(character)){
+			return;
+		}
+		int typeId = Character.digit(character, 10);
+		if (typeId < 1 || typeId >= PointType.values().length) return;
+
+		Vector2 mouse = Utils.getMouse(cam);
+		PointType type = PointType.values()[typeId - 1];
+
+		switch (parameters.getMode()) {
+			case POINT:
+			case CIRCLE:
+				addPoint(type, mouse.x, mouse.y);
+				break;
+			case CLOUD:
+			case MULTIPLE:
+				Random random = new Random();
+				double diameter = parameters.getCloudRadius() * 2 * cam.zoom;
+				for (int i = 0; i < parameters.getCloudSize(); i++) {
+					double x = mouse.x + (random.nextGaussian() - 0.5) * diameter;
+					double y = mouse.y + (random.nextGaussian() - 0.5) * diameter;
+					addPoint(type, x, y);
+				}
+				break;
+		}
+		reEvaluatePointCounts();
 	}
 
 	private void onTouch(TouchUpEvent e) {
@@ -59,7 +100,8 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 
 		switch (parameters.getMode()) {
 			case POINT:
-				engine.add(new Entity(e.getX(), e.getY(), 0).add(new PointComponent(type)));
+			case CIRCLE:
+				addPoint(type, e.getX(), e.getY());
 				break;
 			case CLOUD:
 			case MULTIPLE:
@@ -68,10 +110,11 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 				for (int i = 0; i < parameters.getCloudSize(); i++) {
 					double x = e.getX() + (random.nextGaussian() - 0.5) * diameter;
 					double y = e.getY() + (random.nextGaussian() - 0.5) * diameter;
-					engine.add(new Entity(((float) x), ((float) y), 0).add(new PointComponent(type)));
+					addPoint(type, x, y);
 				}
 				break;
 		}
+		reEvaluatePointCounts();
 	}
 
 	@Override
@@ -98,12 +141,18 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 			points.cpyArray().foreach(engine::removeLater);
 			iteration = 0;
+			reEvaluatePointCounts();
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
 			trainForAccuracy = !trainForAccuracy;
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.T) || Gdx.input.isKeyPressed(Input.Keys.Y)) {
 			train();
+		}
+
+		double accuracy = getAccuracy();
+		if (trainForAccuracy && accuracy >= 0.99){
+			trainForAccuracy = false;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.U) || (trainForAccuracy && getAccuracy() < 0.99 )) {
 			long start = System.currentTimeMillis();
@@ -115,8 +164,38 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		drawSides();
 		drawPoints();
 		drawCostsForPoints();
-		drawIterationAndCost();
+		drawInfo();
+		if (UIUtils.shift()){
+			drawPrediction();
+		}
 	}
+
+
+	protected void drawPrediction(){
+		Vector2 mouse = Utils.getMouse(cam);
+		float x = mouse.x;
+		float y = mouse.y;
+		Array<KeyValuePair<PointType, Double>> predictions = getPredictions(x, y);
+		if (predictions == null || predictions.size == 0) return;
+		predictions.filter(p -> p.value > 0.001).sort(Utils.reverseComparator(Utils.comparingDouble(KeyValuePair::getValue)));
+
+		batch.begin();
+		A.images.font.setColor(Color.BLACK);
+		A.images.font.draw(batch, "(" + StringUtils.ff(x, 2) + ", " + StringUtils.ff(y, 2) + ")", x, y + 10 * cam.zoom, 10, Align.left, false);
+		y -= 20 * cam.zoom;
+		for (KeyValuePair<PointType, Double> prediction : predictions) {
+			A.images.font.setColor(prediction.key.getColor());
+			A.images.font.draw(batch, StringUtils.df(prediction.value * 100, 2) + "%", x, y, 10, Align.left, false);
+			y -= 20 * cam.zoom;
+		}
+		batch.end();
+	}
+
+	/** No need to sort. 0..1 **/
+	protected Array<KeyValuePair<PointType, Double>> getPredictions(double x, double y) {
+		return null;
+	}
+
 
 	private void drawPoints() {
 		batch.begin();
@@ -160,11 +239,22 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		batch.end();
 	}
 
-	private void drawIterationAndCost() {
+	private final Color infoBackground = Color.LIGHT_GRAY.cpy().sub(0, 0, 0, 0.3f);
+	private void drawInfo() {
+		float x = Utils.camLeftX(cam);
+		float y = Utils.camTopY(cam);
+		sr.setColor(infoBackground);
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		sr.begin(ShapeRenderer.ShapeType.Filled);
+		sr.rect(x, y, 160 * cam.zoom, - (110 + pointCounts.size() * 20) * cam.zoom);
+		sr.end();
+		Gdx.gl.glDisable(GL20.GL_BLEND);
+
+
 		A.images.font.setColor(Color.RED);
 		batch.begin();
-		float x = Utils.camLeftX(cam);
-		float y = Utils.camTopY(cam) - 15 * cam.zoom;
+		y -= 15 * cam.zoom;
 		A.images.font.draw(batch, "Iteration: " + iteration, x, y, 10, Align.left, false);
 		y -= 20 * cam.zoom;
 		A.images.font.draw(batch, "Cost: " + StringUtils.dfOpt(getCost(), 10), x, y, 10, Align.left, false);
@@ -175,6 +265,12 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		y -= 20 * cam.zoom;
 		A.images.font.setColor(trainForAccuracy ? Color.GREEN : Color.RED);
 		A.images.font.draw(batch, "TFA: " + trainForAccuracy, x, y, 10, Align.left, false);
+		for (Map.Entry<PointType, Integer> e : pointCounts.entrySet()) {
+			y -= 20 * cam.zoom;
+			A.images.font.setColor(e.getKey().getColor());
+			A.images.font.draw(batch, String.valueOf(e.getValue()), x, y, 10, Align.left, false);
+		}
+
 		batch.end();
 	}
 
@@ -186,4 +282,59 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		}
 		return features;
 	}
+
+	protected void addPoint(PointType type, double x, double y){
+		engine.add(new Entity((float) x, (float) y, 0).add(new PointComponent(type)));
+	}
+
+	protected void reEvaluatePointCounts() {
+		pointCounts.clear();
+		for (Entity point : points) {
+			PointType type = point.get(M.point).type;
+			Integer count = pointCounts.get(type);
+			if (count == null){
+				count = 1;
+			} else {
+				count++;
+			}
+			pointCounts.put(type, count);
+		}
+	}
+
+	protected class KeyValuePair<K, V> {
+
+		K key;
+		V value;
+
+		public KeyValuePair() {
+
+		}
+
+		public KeyValuePair(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		public K getKey() {
+			return key;
+		}
+
+		public void setKey(K key) {
+			this.key = key;
+		}
+
+		public V getValue() {
+			return value;
+		}
+
+		public void setValue(V value) {
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return "(" + key + ", " + value + ")";
+		}
+	}
+
 }

@@ -37,7 +37,8 @@ public class EngineInputAdapter implements InputProcessor {
 
     @Override
     public boolean keyTyped(char character) {
-        return false;
+        engine.dispatch(new KeyTypeEvent(character));
+        return true;
     }
 
     @Override

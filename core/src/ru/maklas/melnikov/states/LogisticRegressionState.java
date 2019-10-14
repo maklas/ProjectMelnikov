@@ -15,6 +15,10 @@ import ru.maklas.melnikov.assets.Asset;
 import ru.maklas.melnikov.engine.*;
 import ru.maklas.melnikov.engine.functions.FunctionComponent;
 import ru.maklas.melnikov.engine.input.EngineInputAdapter;
+import ru.maklas.melnikov.engine.log_regression.BaseLogisticRegressionSystem;
+import ru.maklas.melnikov.engine.log_regression.CircleLogisticRegressionSystem;
+import ru.maklas.melnikov.engine.log_regression.MultiClassLogisticRegressionSystem;
+import ru.maklas.melnikov.engine.log_regression.TwoClassLogisticRegressionSystem;
 import ru.maklas.melnikov.engine.other.EntityDebugSystem;
 import ru.maklas.melnikov.engine.other.TTLSystem;
 import ru.maklas.melnikov.engine.rendering.*;
@@ -79,7 +83,23 @@ public class LogisticRegressionState extends AbstractEngineState {
                 .setPrintFunctionNames(true)
                 .setYScale(defaultScale));
         engine.add(new GradientRenderSystem());
-        engine.add(parameters.getMode() == Parameters.Mode.MULTIPLE ? new ThreeClassLogisticRegressionSystem() : new TwoClassLogisticRegressionSystem());
+
+        BaseLogisticRegressionSystem regressionSystem;
+        switch (parameters.getMode()){
+            case POINT:
+            case CLOUD:
+                regressionSystem = new TwoClassLogisticRegressionSystem();
+                break;
+            case MULTIPLE:
+                regressionSystem = new MultiClassLogisticRegressionSystem();
+                break;
+            case CIRCLE:
+                regressionSystem = new CircleLogisticRegressionSystem();
+                break;
+            default:
+                throw new RuntimeException();
+        }
+        engine.add(regressionSystem);
         engine.add(new BiFunctionRenderSystem());
     }
 

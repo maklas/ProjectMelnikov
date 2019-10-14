@@ -8,8 +8,8 @@ import static java.lang.Math.sin;
 public class CustomBiFunction extends GraphBiFunction {
 
     @Override
-    public double f(double x1, double y) {
-        return lemniscate(x1, y);
+    public double f(double x, double y) {
+        return lemniscate(x, y);
     }
 
     protected double woah(double x1, double x2) {
