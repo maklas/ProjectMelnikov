@@ -20,6 +20,7 @@ import ru.maklas.melnikov.engine.input.KeyTypeEvent;
 import ru.maklas.melnikov.engine.input.TouchUpEvent;
 import ru.maklas.melnikov.engine.point.PointComponent;
 import ru.maklas.melnikov.engine.point.PointType;
+import ru.maklas.melnikov.engine.rendering.CameraComponent;
 import ru.maklas.melnikov.engine.rendering.YScalable;
 import ru.maklas.melnikov.states.Parameters;
 import ru.maklas.melnikov.utils.StringUtils;
@@ -59,7 +60,7 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		parameters = engine.getBundler().get(B.params);
 	}
 
-	private void onKeyType(KeyTypeEvent e) {
+	protected void onKeyType(KeyTypeEvent e) {
 		char character = e.getCharacter();
 		if (!Character.isDigit(character)){
 			return;
@@ -77,13 +78,7 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 				break;
 			case CLOUD:
 			case MULTIPLE:
-				Random random = new Random();
-				double diameter = parameters.getCloudRadius() * 2 * cam.zoom;
-				for (int i = 0; i < parameters.getCloudSize(); i++) {
-					double x = mouse.x + (random.nextGaussian() - 0.5) * diameter;
-					double y = mouse.y + (random.nextGaussian() - 0.5) * diameter;
-					addPoint(type, x, y);
-				}
+				addCloud(type, mouse.x, mouse.y);
 				break;
 		}
 		reEvaluatePointCounts();
@@ -105,13 +100,7 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 				break;
 			case CLOUD:
 			case MULTIPLE:
-				Random random = new Random();
-				double diameter = parameters.getCloudRadius() * 2 * cam.zoom;
-				for (int i = 0; i < parameters.getCloudSize(); i++) {
-					double x = e.getX() + (random.nextGaussian() - 0.5) * diameter;
-					double y = e.getY() + (random.nextGaussian() - 0.5) * diameter;
-					addPoint(type, x, y);
-				}
+				addCloud(type, e.getX(), e.getY());
 				break;
 		}
 		reEvaluatePointCounts();
@@ -121,6 +110,10 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 	public EntitySystem setYScale(double yScale) {
 		this.yScale = yScale;
 		return this;
+	}
+
+	protected void trainForAccuracy() {
+		train();
 	}
 
 	protected abstract void train();
@@ -154,10 +147,15 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		if (trainForAccuracy && accuracy >= 0.99){
 			trainForAccuracy = false;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.U) || (trainForAccuracy && getAccuracy() < 0.99 )) {
+		if (Gdx.input.isKeyPressed(Input.Keys.U)) {
 			long start = System.currentTimeMillis();
 			while (System.currentTimeMillis() - start < 16) {
 				train();
+			}
+		} else if (trainForAccuracy && getAccuracy() < 0.99) {
+			long start = System.currentTimeMillis();
+			while (System.currentTimeMillis() - start < 16) {
+				trainForAccuracy();
 			}
 		}
 
@@ -170,6 +168,12 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		}
 	}
 
+	protected final boolean cameraIsMoving(){
+		ImmutableArray<Entity> cameras = entitiesFor(CameraComponent.class);
+		if (cameras.size() == 0) return false;
+		CameraComponent cc = cameras.get(0).get(M.camera);
+		return cc.vX != 0f || cc.vY != 0f;
+	}
 
 	protected void drawPrediction(){
 		Vector2 mouse = Utils.getMouse(cam);
@@ -287,6 +291,16 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		engine.add(new Entity((float) x, (float) y, 0).add(new PointComponent(type)));
 	}
 
+	protected void addCloud(PointType type, double x, double y){
+		Random random = new Random();
+		double diameter = parameters.getCloudRadius() * 2 * cam.zoom;
+		for (int i = 0; i < parameters.getCloudSize(); i++) {
+			double posX = x + (random.nextGaussian() - 0.5) * diameter;
+			double posY = y + (random.nextGaussian() - 0.5) * diameter;
+			addPoint(type, posX, posY);
+		}
+	}
+
 	protected void reEvaluatePointCounts() {
 		pointCounts.clear();
 		for (Entity point : points) {
@@ -337,4 +351,6 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		}
 	}
 
+	//0.01 -> 4110
+	//0.001 -> 14110
 }

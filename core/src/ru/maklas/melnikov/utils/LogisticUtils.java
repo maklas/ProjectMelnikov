@@ -12,7 +12,7 @@ public class LogisticUtils {
 	}
 
 	public static double sigmoidNoInfinity(double value){
-		return MathUtils.clamp(1 / (1 + Math.exp(-value)), 1e-3, 1e3);
+		return MathUtils.clamp(1 / (1 + Math.exp(-value)), 1e-4, 1e4);
 	}
 
 	public static double hypothesis(double x1, double x2, double th0, double th1, double th2) {

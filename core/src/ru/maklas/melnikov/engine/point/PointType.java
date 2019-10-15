@@ -12,7 +12,7 @@ public enum  PointType {
 			case BLUE: return Color.BLUE;
 			case GREEN: return Color.GREEN;
 			case PURPLE: return Color.PURPLE;
-			case BLACK: return Color.BLACK;
+			case BLACK: return Color.YELLOW;
 			default: return Color.WHITE;
 		}
 	}

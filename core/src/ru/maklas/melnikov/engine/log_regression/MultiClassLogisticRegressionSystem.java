@@ -1,5 +1,7 @@
 package ru.maklas.melnikov.engine.log_regression;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -7,9 +9,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import ru.maklas.melnikov.engine.M;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
+import ru.maklas.melnikov.engine.input.KeyTypeEvent;
 import ru.maklas.melnikov.engine.point.PointType;
 import ru.maklas.melnikov.functions.bi_functions.LogisticBiFunction;
-import ru.maklas.melnikov.utils.Log;
 import ru.maklas.melnikov.utils.LogisticUtils;
 import ru.maklas.melnikov.utils.Utils;
 import ru.maklas.melnikov.utils.math.DoubleArray;
@@ -44,6 +46,30 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 	}
 
 	@Override
+	protected void onKeyType(KeyTypeEvent e) {
+		super.onKeyType(e);
+		if (e.getCharacter() != '0') return;
+
+		if (classCount == 5) {
+			addCloud(PointType.values()[0], 6.0, 13.0);
+			addCloud(PointType.values()[1], 18.0, 0.0);
+			addCloud(PointType.values()[2], 7.5, -19.0);
+			addCloud(PointType.values()[3], -15.0, -15.0);
+			addCloud(PointType.values()[4], -17.5, 6.0);
+			reEvaluatePointCounts();
+		} else if (classCount == 4) {
+			addCloud(PointType.values()[0],10.0, 10.0);
+			addCloud(PointType.values()[1],10.0, -10.0);
+			addCloud(PointType.values()[2],-10.0, -10.0);
+			addCloud(PointType.values()[3],-10.0, 10.0);
+		} else if (classCount == 3) {
+			addCloud(PointType.values()[0], 0, 10);
+			addCloud(PointType.values()[1], -5, -3);
+			addCloud(PointType.values()[2], 5, -3);
+		}
+	}
+
+	@Override
 	protected void train() {
 		for (int i = 0; i < functions.size; i++) {
 			LogisticBiFunction model = (LogisticBiFunction) functions.get(i).fun;
@@ -66,6 +92,33 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		}
 		iteration++;
 	}
+
+	@Override
+	protected void trainForAccuracy() {
+		Matrix features = getFeatures();
+
+		for (int i = 0; i < functions.size; i++) {
+			LogisticBiFunction model = (LogisticBiFunction) functions.get(i).fun;
+			PointType targetType = typeOrder.get(i);
+
+			DoubleArray labels = new DoubleArray(points.size());
+			DoubleArray weights = DoubleArray.with(model.th0, model.th1, model.th2);
+
+			for (int j = 0; j < points.size(); j++) {
+				labels.add(classify(points.get(j), targetType));
+			}
+
+			double accuracy = LogisticUtils.accuracy(features, labels, weights);
+			if (accuracy > 0.99) continue;
+
+			DoubleArray weightAdjustments = LogisticUtils.gradientDescent(features, labels, weights, parameters.getLearningRate());
+			model.th0 -= weightAdjustments.get(0);
+			model.th1 -= weightAdjustments.get(1);
+			model.th2 -= weightAdjustments.get(2);
+		}
+		iteration++;
+	}
+
 	@Override
 	protected double getAccuracy() {
 		Matrix features = getFeatures();
@@ -76,6 +129,26 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		return accuracy / typeOrder.size;
 	}
 
+	@Override
+	public void render() {
+		super.render();
+		if (Gdx.input.isKeyPressed(Input.Keys.PLUS)) {
+			for (BiFunctionComponent function : functions) {
+				LogisticBiFunction f = (LogisticBiFunction) function.fun;
+				f.th0 *= 1.02;
+				f.th1 *= 1.02;
+				f.th2 *= 1.02;
+			}
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.MINUS)) {
+			for (BiFunctionComponent function : functions) {
+				LogisticBiFunction f = (LogisticBiFunction) function.fun;
+				f.th0 /= 1.02;
+				f.th1 /= 1.02;
+				f.th2 /= 1.02;
+			}
+		}
+	}
 
 	@Override
 	protected void drawSides() {
@@ -85,7 +158,7 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		double leftX = Utils.camLeftX(cam);
 		double botY = Utils.camBotY(cam);
 		double topY = Utils.camTopY(cam);
-		double step = 2 * cam.zoom;
+		double step = (Gdx.input.isKeyPressed(Input.Keys.U) || Gdx.input.isKeyPressed(Input.Keys.Y) || trainForAccuracy || cameraIsMoving() ? 5 : 2) * cam.zoom;
 		double[] values = new double[functions.size];
 
 		if (false){ //Резкое смещение на границе
@@ -109,8 +182,10 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 			}
 		} else { //Плавное смещение по сигмоиде. Совпадает с прогнозированием
 			Color color = new Color();
-			for (double x = leftX; x < rightX; x += step) {
-				for (double y = botY; y < topY; y += step) {
+			boolean shift = false;
+			for (double x = leftX; x < rightX; x += step / 2) {
+				shift = !shift;
+				for (double y = botY + (shift ? step / 2 : 0); y < topY; y += step) {
 					color.set(0, 0, 0, 1);
 					double sum = 0;
 					for (int i = 0; i < values.length; i++) {
@@ -186,10 +261,12 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 
 	@Override
 	protected Array<KeyValuePair<PointType, Double>> getPredictions(double x, double y) {
+		DoubleArray features = DoubleArray.with(1, x, y);
 		double sum = 0;
 		Array<KeyValuePair<PointType, Double>> array = new Array<>();
+
 		for (PointType pointType : typeOrder) {
-			double prediction = 1 - LogisticUtils.prediction(DoubleArray.with(1, x, y), getWeights(pointType));
+			double prediction = 1 - LogisticUtils.prediction(features, getWeights(pointType));
 			array.add(new KeyValuePair<>(pointType, prediction));
 			sum += prediction;
 		}

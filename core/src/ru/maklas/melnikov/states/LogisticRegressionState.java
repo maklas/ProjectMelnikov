@@ -53,6 +53,7 @@ public class LogisticRegressionState extends AbstractEngineState {
         sr = new ShapeRenderer();
         sr.setAutoShapeType(true);
         cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam.zoom = 0.1f;
         MNW.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
     }
 
