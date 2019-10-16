@@ -81,6 +81,8 @@ public class ScalableFunctionRenderSystem extends RenderEntitySystem implements 
         subCam.viewportWidth = cam.viewportWidth;
         subCam.viewportHeight = (float) (cam.viewportHeight * yScale);
         subCam.zoom = cam.zoom;
+        float scaleXBefore = font.getData().scaleX;
+        float scaleYBefore = font.getData().scaleY;
 
         Gdx.gl.glLineWidth(1);
         sr.begin(ShapeRenderer.ShapeType.Line);
@@ -211,6 +213,7 @@ public class ScalableFunctionRenderSystem extends RenderEntitySystem implements 
 
             batch.end();
         }
+        font.getData().setScale(scaleXBefore, scaleYBefore);
     }
 
 

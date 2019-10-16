@@ -475,6 +475,14 @@ public class DoubleArray {
 		return arr;
 	}
 
+	public DoubleArray negate(){
+		DoubleArray arr = new DoubleArray(this);
+		for (int i = 0; i < arr.size; i++) {
+			arr.items[i] = -this.items[i];
+		}
+		return arr;
+	}
+
 	public Matrix toRow(){
 		Matrix matrix = new Matrix();
 		matrix.addRow(this);

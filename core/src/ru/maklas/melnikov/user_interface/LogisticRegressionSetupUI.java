@@ -32,6 +32,7 @@ public class LogisticRegressionSetupUI extends BaseStage {
 		cloudRadiusTextField = new VisValidatableTextField(Validators.INTEGERS);
 		learningRateTextField = new VisValidatableTextField(Validators.FLOATS);
 		classNumberSlider = new VisSlider(3, 5, 1, false);
+		VisLabel classNumberLabel;
 
 
 		table.defaults().padBottom(5);
@@ -53,7 +54,7 @@ public class LogisticRegressionSetupUI extends BaseStage {
 		table.add(new VisLabel("Learning rate: ")).padRight(20);
 		table.add(learningRateTextField).width(75);
 		table.row();
-		table.add(new VisLabel("Классы: ")).padRight(20);
+		table.add((classNumberLabel = new VisLabel("3 класса"))).padRight(20);
 		table.add(classNumberSlider).width(75);
 		table.row();
 
@@ -62,6 +63,17 @@ public class LogisticRegressionSetupUI extends BaseStage {
 		cloudRadiusTextField.setText(String.valueOf(((int) defaultParameters.getCloudRadius())));
 		learningRateTextField.setText(String.valueOf(defaultParameters.getLearningRate()));
 		classNumberSlider.setValue(defaultParameters.getClassCount());
+		classNumberSlider.addChangeLsitener(f -> {
+			int numberOfClasses = MathUtils.round(f);
+			String text;
+			if (numberOfClasses >= 5) {
+				text = numberOfClasses + " классов";
+			} else {
+				text = numberOfClasses + " класса";
+			}
+			classNumberLabel.setText(text);
+		});
+		classNumberSlider.setValue(3);
 	}
 
 	public int getCloudRadius(){

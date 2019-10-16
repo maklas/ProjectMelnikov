@@ -24,6 +24,7 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 	private Array<BiFunctionComponent> functions;
 	private Array<PointType> typeOrder;
 	private int classCount;
+	private boolean drawFullGradient;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
@@ -31,16 +32,24 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		functions = new Array<>();
 		typeOrder = new Array<>();
 
-		Vector2 vec = new Vector2(0, 1).rotate(15);
 		classCount = MathUtils.clamp(parameters.getClassCount(), 3, 5);
-		float rotation = 360.0f / classCount;
 
-		for (int i = 0; i < classCount; i++) {
-			PointType type = PointType.values()[i];
+		if (classCount == 3){
+			typeOrder = Array.with(PointType.RED, PointType.GREEN, PointType.BLUE);
+		} else if (classCount == 4) {
+			typeOrder = Array.with(PointType.RED, PointType.GREEN, PointType.PURPLE, PointType.BLUE);
+		} else {
+			for (int i = 0; i < classCount; i++) {
+				typeOrder.add(PointType.values()[i]);
+			}
+		}
+
+		Vector2 vec = new Vector2(0, 1).rotate(15);
+		float rotation = 360.0f / classCount;
+		for (PointType type : typeOrder) {
 			BiFunctionComponent bfc = new BiFunctionComponent(new LogisticBiFunction(1, vec.x, vec.y)).setColor(type.getColor());
 			engine.add(new Entity().add(bfc));
 			functions.add(bfc);
-			typeOrder.add(type);
 			vec.rotate(rotation);
 		}
 	}
@@ -51,21 +60,21 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		if (e.getCharacter() != '0') return;
 
 		if (classCount == 5) {
-			addCloud(PointType.values()[0], 6.0, 13.0);
-			addCloud(PointType.values()[1], 18.0, 0.0);
-			addCloud(PointType.values()[2], 7.5, -19.0);
-			addCloud(PointType.values()[3], -15.0, -15.0);
-			addCloud(PointType.values()[4], -17.5, 6.0);
+			addCloud(typeOrder.get(0), 6.0, 13.0);
+			addCloud(typeOrder.get(1), 18.0, 0.0);
+			addCloud(typeOrder.get(2), 7.5, -19.0);
+			addCloud(typeOrder.get(3), -15.0, -15.0);
+			addCloud(typeOrder.get(4), -17.5, 6.0);
 			reEvaluatePointCounts();
 		} else if (classCount == 4) {
-			addCloud(PointType.values()[0],10.0, 10.0);
-			addCloud(PointType.values()[1],10.0, -10.0);
-			addCloud(PointType.values()[2],-10.0, -10.0);
-			addCloud(PointType.values()[3],-10.0, 10.0);
+			addCloud(typeOrder.get(0),10.0, 10.0);
+			addCloud(typeOrder.get(1),10.0, -10.0);
+			addCloud(typeOrder.get(2),-10.0, -10.0);
+			addCloud(typeOrder.get(3),-10.0, 10.0);
 		} else if (classCount == 3) {
-			addCloud(PointType.values()[0], 0, 10);
-			addCloud(PointType.values()[1], -5, -3);
-			addCloud(PointType.values()[2], 5, -3);
+			addCloud(typeOrder.get(0), 0, 10);
+			addCloud(typeOrder.get(1), -5, -3);
+			addCloud(typeOrder.get(2), 5, -3);
 		}
 	}
 
@@ -135,17 +144,17 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		if (Gdx.input.isKeyPressed(Input.Keys.PLUS)) {
 			for (BiFunctionComponent function : functions) {
 				LogisticBiFunction f = (LogisticBiFunction) function.fun;
-				f.th0 *= 1.02;
-				f.th1 *= 1.02;
-				f.th2 *= 1.02;
+				f.th0 *= 1.04;
+				f.th1 *= 1.04;
+				f.th2 *= 1.04;
 			}
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.MINUS)) {
 			for (BiFunctionComponent function : functions) {
 				LogisticBiFunction f = (LogisticBiFunction) function.fun;
-				f.th0 /= 1.02;
-				f.th1 /= 1.02;
-				f.th2 /= 1.02;
+				f.th0 /= 1.04;
+				f.th1 /= 1.04;
+				f.th2 /= 1.04;
 			}
 		}
 	}
@@ -153,60 +162,93 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 	@Override
 	protected void drawSides() {
 		sr.begin(ShapeRenderer.ShapeType.Point);
+		double step = (Gdx.input.isKeyPressed(Input.Keys.U) || Gdx.input.isKeyPressed(Input.Keys.Y) || trainForAccuracy || cameraIsMoving() ? 4 : 2) * cam.zoom;
+
+		if (drawFullGradient) {
+			drawFullGradient(step);
+		} else {
+			drawDistinguishableGradient(step);
+		}
+		sr.end();
+	}
+
+	private void drawDistinguishableGradient(double step) {
 
 		double rightX = Utils.camRightX(cam);
 		double leftX = Utils.camLeftX(cam);
 		double botY = Utils.camBotY(cam);
 		double topY = Utils.camTopY(cam);
-		double step = (Gdx.input.isKeyPressed(Input.Keys.U) || Gdx.input.isKeyPressed(Input.Keys.Y) || trainForAccuracy || cameraIsMoving() ? 5 : 2) * cam.zoom;
 		double[] values = new double[functions.size];
 
-		if (false){ //Резкое смещение на границе
-			Color color = new Color();
-			for (double x = leftX; x < rightX; x += step) {
-				for (double y = botY; y < topY; y += step) {
-					color.set(0, 0, 0, 1);
-					boolean meaningfull = false;
-					for (BiFunctionComponent function : functions) {
-						double val = function.fun.f(x, y);
-						if (val < 0) {
-							color.add(function.color);
-							meaningfull = true;
-						}
-					}
-					if (meaningfull) {
-						sr.setColor(color);
-						sr.point((float) x, (float) y, 0);
+		Color color = new Color();
+		boolean shift = false;
+		for (double x = leftX; x < rightX; x += step / 2) {
+			shift = !shift;
+			for (double y = botY + (shift ? step / 2 : 0); y < topY; y += step) {
+				color.set(0, 0, 0, 1);
+				double sum = 0;
+				for (int i = 0; i < values.length; i++) {
+					double v = LogisticUtils.sigmoid(-functions.get(i).fun.f(x, y));
+					values[i] = v;
+					sum += v;
+				}
+				double max = 0;
+				double secondMax = 0;
+				for (int i = 0; i < values.length; i++) {
+					float percentage = (float) (values[i] / sum);
+					values[i] = percentage;
+					if (percentage >= max) {
+						secondMax = max;
+						max = percentage;
+					} else if (percentage > secondMax) {
+						secondMax = percentage;
 					}
 				}
-			}
-		} else { //Плавное смещение по сигмоиде. Совпадает с прогнозированием
-			Color color = new Color();
-			boolean shift = false;
-			for (double x = leftX; x < rightX; x += step / 2) {
-				shift = !shift;
-				for (double y = botY + (shift ? step / 2 : 0); y < topY; y += step) {
-					color.set(0, 0, 0, 1);
-					double sum = 0;
-					for (int i = 0; i < values.length; i++) {
-						double v = LogisticUtils.sigmoid(-functions.get(i).fun.f(x, y));
-						values[i] = v;
-						sum += v;
-					}
-
-					for (int i = 0; i < values.length; i++) {
-						Color c = functions.get(i).color;
-						float percentage = (float)(values[i] / sum);
-						if (percentage > 0) {
-							color.add(c.r * percentage, c.g * percentage, c.b * percentage, 1);
-						}
-					}
-					sr.setColor(color);
-					sr.point((float) x, (float) y, 0);
+				double purity = max - secondMax; //0..1
+				if (purity < 0.005) continue;
+				for (int i = 0; i < values.length; i++) {
+					float coloMul = (float) (values[i] * (1 + Math.sqrt(purity)));
+					Color c = functions.get(i).color;
+					color.add(c.r * coloMul, c.g * coloMul, c.b * coloMul, 1);
 				}
+				sr.setColor(color);
+				sr.point((float) x, (float) y, 0);
 			}
 		}
-		sr.end();
+	}
+
+	private void drawFullGradient(double step) {
+		double rightX = Utils.camRightX(cam);
+		double leftX = Utils.camLeftX(cam);
+		double botY = Utils.camBotY(cam);
+		double topY = Utils.camTopY(cam);
+		double[] values = new double[functions.size];
+
+		Color color = new Color();
+		boolean shift = false;
+		for (double x = leftX; x < rightX; x += step / 2) {
+			shift = !shift;
+			for (double y = botY + (shift ? step / 2 : 0); y < topY; y += step) {
+				color.set(0, 0, 0, 1);
+				//1.
+				double sum = 0;
+				for (int i = 0; i < values.length; i++) {
+					double v = LogisticUtils.sigmoid(-functions.get(i).fun.f(x, y));
+					values[i] = v;
+					sum += v;
+				}
+
+				for (int i = 0; i < values.length; i++) {
+					Color c = functions.get(i).color;
+					float percentage = (float) (values[i] / sum);
+					if (percentage > 0) {
+						color.add(c.r * percentage, c.g * percentage, c.b * percentage, 1);
+					}
+				}
+				sr.setColor(color);
+				sr.point((float) x, (float) y, 0);
+			}
+		}
 	}
 
 	@Override
@@ -255,7 +297,7 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 
 	@Override
 	protected void addPoint(PointType type, double x, double y) {
-		if (type.ordinal() >= classCount) return;
+		if (!typeOrder.contains(type, false)) return;
 		super.addPoint(type, x, y);
 	}
 
@@ -266,12 +308,16 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		Array<KeyValuePair<PointType, Double>> array = new Array<>();
 
 		for (PointType pointType : typeOrder) {
-			double prediction = 1 - LogisticUtils.prediction(features, getWeights(pointType));
+			double prediction = LogisticUtils.prediction(features, getWeights(pointType).negate());
 			array.add(new KeyValuePair<>(pointType, prediction));
 			sum += prediction;
 		}
 		double multiplication = 1.0 / sum;
 		array.foreach(pair -> pair.value *= multiplication);
 		return array;
+	}
+
+	public void setDrawFullGradient(boolean enabled) {
+		this.drawFullGradient = enabled;
 	}
 }

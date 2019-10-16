@@ -2,6 +2,7 @@ package ru.maklas.melnikov.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,6 +14,7 @@ import ru.maklas.libs.Timer;
 import ru.maklas.melnikov.assets.A;
 import ru.maklas.melnikov.assets.Asset;
 import ru.maklas.melnikov.engine.*;
+import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
 import ru.maklas.melnikov.engine.functions.FunctionComponent;
 import ru.maklas.melnikov.engine.input.EngineInputAdapter;
 import ru.maklas.melnikov.engine.log_regression.BaseLogisticRegressionSystem;
@@ -23,6 +25,7 @@ import ru.maklas.melnikov.engine.other.EntityDebugSystem;
 import ru.maklas.melnikov.engine.other.TTLSystem;
 import ru.maklas.melnikov.engine.rendering.*;
 import ru.maklas.melnikov.mnw.MNW;
+import ru.maklas.melnikov.user_interface.LogisticRegressionUI;
 import ru.maklas.mengine.*;
 
 public class LogisticRegressionState extends AbstractEngineState {
@@ -39,6 +42,7 @@ public class LogisticRegressionState extends AbstractEngineState {
     private double oldYScale = 1;
     private double targetYScale = 1;
     private Timer smoothScaleTimer;
+    private LogisticRegressionUI ui;
 
     public LogisticRegressionState(Array<Entity> entities, Parameters parameters) {
         this.entitiesToAdd = entities;
@@ -55,6 +59,7 @@ public class LogisticRegressionState extends AbstractEngineState {
         cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.zoom = 0.1f;
         MNW.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
+        ui = new LogisticRegressionUI();
     }
 
     @Override
@@ -117,6 +122,36 @@ public class LogisticRegressionState extends AbstractEngineState {
         smoothScaleTimer = new Timer(1f, false, () -> setYScale(targetYScale));
         smoothScaleTimer.setEnabled(false);
         doScaleAndPosition();
+
+        ui.enableCoordinates.addChangeListener((enabled) -> {
+            ScalableFunctionRenderSystem system = engine.getSystemManager().getSystem(ScalableFunctionRenderSystem.class);
+            if (system != null) {
+                system.setDrawAxis(enabled);
+                system.setDrawAxisPortions(enabled);
+                system.setDrawFunctions(enabled);
+            }
+        });
+        ui.enableFunctions.addChangeListener((enabled) -> {
+            BiFunctionRenderSystem system = engine.getSystemManager().getSystem(BiFunctionRenderSystem.class);
+            if (system != null) {
+                system.setEnabled(enabled);
+            }
+        });
+        ui.enableGradient.addChangeListener((enabled) -> {
+            for (RenderEntitySystem renderSystem : engine.getSystemManager().getRenderSystems()) {
+                if (renderSystem instanceof BaseLogisticRegressionSystem) {
+                    ((BaseLogisticRegressionSystem) renderSystem).setDrawGradient(enabled);
+                }
+            }
+        });
+
+        ui.enableFullGradient.addChangeListener((enabled) -> {
+
+            MultiClassLogisticRegressionSystem system = engine.getSystemManager().getSystem(MultiClassLogisticRegressionSystem.class);
+            if (system != null) {
+                system.setDrawFullGradient(enabled);
+            }
+        });
     }
 
     private void doScaleAndPosition(){
@@ -186,13 +221,14 @@ public class LogisticRegressionState extends AbstractEngineState {
 
     @Override
     protected InputProcessor getInput() {
-        return new EngineInputAdapter(engine, cam);
+        return new InputMultiplexer(ui, new EngineInputAdapter(engine, cam));
     }
 
     @Override
     public void resize(int width, int height) {
         cam.setToOrtho(width, height);
         doScaleAndPosition();
+        ui.resize(width, height);
     }
 
     @Override
@@ -201,5 +237,6 @@ public class LogisticRegressionState extends AbstractEngineState {
         batch.setProjectionMatrix(cam.combined);
         sr.setProjectionMatrix(cam.combined);
         engine.render();
+        ui.draw();
     }
 }

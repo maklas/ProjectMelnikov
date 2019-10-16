@@ -47,6 +47,7 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 	protected ShapeRenderer sr;
 	protected boolean trainForAccuracy = false;
 	protected EnumMap<PointType, Integer> pointCounts;
+	protected boolean drawGradient = true;
 
 	@Override
 	public void onAddedToEngine(Engine engine) {
@@ -131,6 +132,7 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 
 	@Override
 	public void render() {
+		A.images.font.getData().setScale(cam.zoom);
 		if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 			points.cpyArray().foreach(engine::removeLater);
 			iteration = 0;
@@ -159,7 +161,9 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 			}
 		}
 
-		drawSides();
+		if (drawGradient) {
+			drawSides();
+		}
 		drawPoints();
 		drawCostsForPoints();
 		drawInfo();
@@ -313,6 +317,10 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 			}
 			pointCounts.put(type, count);
 		}
+	}
+
+	public void setDrawGradient(boolean bool) {
+		this.drawGradient = bool;
 	}
 
 	protected class KeyValuePair<K, V> {

@@ -5,7 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.utils.Align;
 import com.kotcrab.vis.ui.widget.VisTable;
 
-public class CornerView extends BaseStage {
+public class CornerStage extends BaseStage {
 
     private final VisTable mainTable;
     public final Cell topLeft;
@@ -13,7 +13,7 @@ public class CornerView extends BaseStage {
     public final Cell bottomLeft;
     public final Cell bottomRight;
 
-    public CornerView() {
+    public CornerStage() {
         mainTable = new VisTable();
         addActor(mainTable);
         mainTable.setFillParent(true);
