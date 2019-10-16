@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import ru.maklas.melnikov.engine.M;
 import ru.maklas.melnikov.engine.functions.BiFunctionComponent;
+import ru.maklas.melnikov.engine.point.PointType;
 import ru.maklas.melnikov.functions.bi_functions.CircleBiFunction;
 import ru.maklas.melnikov.functions.bi_functions.GraphBiFunction;
 import ru.maklas.melnikov.utils.LogisticUtils;
@@ -36,7 +37,7 @@ public class CircleLogisticRegressionSystem extends BaseLogisticRegressionSystem
 		for (int i = 0; i < points.size(); i++) {
 			Entity p = points.get(i);
 			features.addRow(DoubleArray.with(1, p.x, p.y));
-			labels.add(p.get(M.point).type.getClassification());
+			labels.add(classify(p.get(M.point).type));
 		}
 
 		DoubleArray weightAdjustments = LogisticUtils.gradientDescent(features, labels, weights, 0.1);
@@ -44,6 +45,10 @@ public class CircleLogisticRegressionSystem extends BaseLogisticRegressionSystem
 		model.th1 -= weightAdjustments.get(1);
 		model.th2 -= weightAdjustments.get(2);
 		iteration++;
+	}
+
+	private int classify(PointType type) {
+		return type == PointType.RED ? 1 : 0;
 	}
 
 	@Override
@@ -80,7 +85,7 @@ public class CircleLogisticRegressionSystem extends BaseLogisticRegressionSystem
 	@Override
 	protected double getCost(Entity point) {
 		double value = LogisticUtils.sigmoidNoInfinity(bfc.fun.f(point.x, point.y));
-		int target = point.get(M.point).type.getClassification();
+		int target = classify(point.get(M.point).type);
 		return LogisticUtils.logisticCost(value, target);
 	}
 
@@ -88,7 +93,7 @@ public class CircleLogisticRegressionSystem extends BaseLogisticRegressionSystem
 		DoubleArray labels = new DoubleArray();
 		for (int i = 0; i < points.size(); i++) {
 			Entity p = points.get(i);
-			labels.add(p.get(M.point).type.getClassification());
+			labels.add(classify(p.get(M.point).type));
 		}
 		return labels;
 	}

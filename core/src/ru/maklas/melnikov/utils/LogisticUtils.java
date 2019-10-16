@@ -56,7 +56,6 @@ public class LogisticUtils {
 		return 1.0 - ((double) diff.count(d -> Math.abs(d) >= 0.5) / diff.size);
 	}
 
-
 	/**
 	 * @param features [x][3]
 	 * @param lables   [x]

@@ -38,7 +38,7 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 		for (int i = 0; i < points.size(); i++) {
 			Entity p = points.get(i);
 			features.addRow(DoubleArray.with(1, p.x, p.y));
-			labels.add(p.get(M.point).type.getClassification());
+			labels.add(classify(p.get(M.point).type));
 		}
 
 		DoubleArray weightAdjustments = LogisticUtils.gradientDescent(features, labels, weights, 0.1);
@@ -65,18 +65,22 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 		double step = 2 * cam.zoom;
 
 		if (false) { //Резкое смещение на границе
-			for (double x = leftX; x < rightX; x += step) {
-				for (double y = botY; y < topY; y += step) {
+			boolean shift = false;
+			for (double x = leftX; x < rightX; x += step / 2) {
+				shift = !shift;
+				for (double y = botY + (shift ? step / 2 : 0); y < topY; y += step) {
 					double val = f.f(x, y);
 					sr.setColor(val > 0 ? Color.RED : Color.BLUE);
 					sr.point((float) x, (float) y, 0);
 				}
 			}
 		} else {//Плавное смещение по сигмоиде. Совпадает с прогнозированием
-			for (double x = leftX; x < rightX; x += step) {
-				for (double y = botY; y < topY; y += step) {
+			boolean shift = false;
+			for (double x = leftX; x < rightX; x += step / 2) {
+				shift = !shift;
+				for (double y = botY + (shift ? step / 2 : 0); y < topY; y += step) {
 					double val = LogisticUtils.sigmoid(f.f(x, y));
-					sr.setColor(((float) val), 0, (float) - val, 1);
+					sr.setColor(((float) val), 0, (float) (1 - val), 1);
 					sr.point((float) x, (float) y, 0);
 				}
 			}
@@ -92,7 +96,7 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 	@Override
 	protected double getCost(Entity point) {
 		double value = LogisticUtils.sigmoidNoInfinity(bfc.fun.f(point.x, point.y));
-		int target = point.get(M.point).type.getClassification();
+		int target = classify(point.get(M.point).type);
 		return LogisticUtils.logisticCost(value, target);
 	}
 
@@ -100,9 +104,13 @@ public class TwoClassLogisticRegressionSystem extends BaseLogisticRegressionSyst
 		DoubleArray labels = new DoubleArray();
 		for (int i = 0; i < points.size(); i++) {
 			Entity p = points.get(i);
-			labels.add(p.get(M.point).type.getClassification());
+			labels.add(classify(p.get(M.point).type));
 		}
 		return labels;
+	}
+
+	private int classify(PointType type){
+		return type == PointType.RED ? 1 : 0;
 	}
 
 	private DoubleArray getWeights(){

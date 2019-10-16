@@ -162,7 +162,7 @@ public class ScalableFunctionRenderSystem extends RenderEntitySystem implements 
             Gdx.gl.glLineWidth(1f);
         }
 
-        boolean rbp = Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
+        boolean rbp = Gdx.input.isButtonPressed(Input.Buttons.MIDDLE);
         if (drawAxis && (drawNumbers || xAxisName != null || yAxisName != null || rbp)){
 
             batch.begin();
