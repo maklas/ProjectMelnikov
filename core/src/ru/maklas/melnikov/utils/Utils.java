@@ -34,6 +34,7 @@ import java.util.concurrent.*;
  */
 public class Utils {
 
+    public static final int maxClasses = 6;
     public static final Vector2 vec1 = new Vector2(0, 0);
     public static final Vector2 vec2 = new Vector2(0, 0);
     public static final Pool<Vector2> vecPool = new Pool<Vector2>() {
@@ -497,4 +498,6 @@ public class Utils {
     public static boolean isEqual(double a, double b) {
         return Math.abs(b - a) < 0.0000001d;
     }
+
+
 }

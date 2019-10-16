@@ -4,14 +4,15 @@ import com.badlogic.gdx.graphics.Color;
 
 public enum  PointType {
 
-	RED, YELLOW, GREEN, BLUE, PURPLE, UNKNOWN;
+	RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, UNKNOWN;
 
 	public Color getColor() {
 		switch (this) {
 			case RED: return Color.RED;
-			case BLUE: return Color.BLUE;
-			case GREEN: return Color.GREEN;
 			case YELLOW: return Color.YELLOW;
+			case GREEN: return Color.GREEN;
+			case CYAN: return Color.CYAN;
+			case BLUE: return Color.BLUE;
 			case PURPLE: return Color.PURPLE;
 			default: return Color.WHITE;
 		}
@@ -19,11 +20,12 @@ public enum  PointType {
 
 	public int getClassification() {
 		switch (this){
-			case BLUE: return 0;
-			case RED: return 1;
+			case RED: return 0;
+			case YELLOW: return 1;
 			case GREEN: return 2;
-			case YELLOW: return 3;
-			case PURPLE: return 4;
+			case CYAN: return 3;
+			case BLUE: return 4;
+			case PURPLE: return 5;
 			default: throw new RuntimeException("");
 		}
 	}

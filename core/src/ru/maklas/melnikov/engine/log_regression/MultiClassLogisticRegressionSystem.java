@@ -32,25 +32,35 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		functions = new Array<>();
 		typeOrder = new Array<>();
 
-		classCount = MathUtils.clamp(parameters.getClassCount(), 3, 5);
+		classCount = MathUtils.clamp(parameters.getClassCount(), 3, Utils.maxClasses);
 
 		if (classCount == 3){
 			typeOrder = Array.with(PointType.RED, PointType.GREEN, PointType.BLUE);
 		} else if (classCount == 4) {
 			typeOrder = Array.with(PointType.RED, PointType.GREEN, PointType.PURPLE, PointType.BLUE);
+		} else if (classCount == 5) {
+			typeOrder = Array.with(PointType.RED, PointType.YELLOW, PointType.GREEN, PointType.BLUE, PointType.PURPLE);
 		} else {
 			for (int i = 0; i < classCount; i++) {
 				typeOrder.add(PointType.values()[i]);
 			}
 		}
 
-		Vector2 vec = new Vector2(0, 1).rotate(15);
+		Vector2 vec = new Vector2(0, 2).rotate(10);
+		Array<Vector2> positions = new Array<>();
 		float rotation = 360.0f / classCount;
-		for (PointType type : typeOrder) {
-			BiFunctionComponent bfc = new BiFunctionComponent(new LogisticBiFunction(1, vec.x, vec.y)).setColor(type.getColor());
+		for (int i = 0; i < classCount; i++) {
+			positions.add(vec.cpy());
+			vec.rotate(rotation);
+		}
+		positions.shuffle();
+
+		for (int i = 0; i < typeOrder.size; i++) {
+			PointType type = typeOrder.get(i);
+			Vector2 position = positions.get(i);
+			BiFunctionComponent bfc = new BiFunctionComponent(new LogisticBiFunction(1, position.x, position.y)).setColor(type.getColor());
 			engine.add(new Entity().add(bfc));
 			functions.add(bfc);
-			vec.rotate(rotation);
 		}
 	}
 
@@ -59,22 +69,12 @@ public class MultiClassLogisticRegressionSystem extends BaseLogisticRegressionSy
 		super.onKeyType(e);
 		if (e.getCharacter() != '0') return;
 
-		if (classCount == 5) {
-			addCloud(typeOrder.get(0), 6.0, 13.0);
-			addCloud(typeOrder.get(1), 18.0, 0.0);
-			addCloud(typeOrder.get(2), 7.5, -19.0);
-			addCloud(typeOrder.get(3), -15.0, -15.0);
-			addCloud(typeOrder.get(4), -17.5, 6.0);
-			reEvaluatePointCounts();
-		} else if (classCount == 4) {
-			addCloud(typeOrder.get(0),10.0, 10.0);
-			addCloud(typeOrder.get(1),10.0, -10.0);
-			addCloud(typeOrder.get(2),-10.0, -10.0);
-			addCloud(typeOrder.get(3),-10.0, 10.0);
-		} else if (classCount == 3) {
-			addCloud(typeOrder.get(0), 0, 10);
-			addCloud(typeOrder.get(1), -5, -3);
-			addCloud(typeOrder.get(2), 5, -3);
+		Vector2 vec = new Vector2(150, 0);
+		vec.scl(cam.zoom).rotate(0);
+		float rotation = 360f / classCount;
+		for (int i = 0; i < classCount; i++) {
+			addCloud(typeOrder.get(i), vec.x, vec.y);
+			vec.rotate(-rotation);
 		}
 	}
 

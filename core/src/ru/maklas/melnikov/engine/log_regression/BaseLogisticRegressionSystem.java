@@ -141,7 +141,7 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
 			trainForAccuracy = !trainForAccuracy;
 		}
-		if (Gdx.input.isKeyJustPressed(Input.Keys.T) || Gdx.input.isKeyPressed(Input.Keys.Y)) {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.T) || Gdx.input.isKeyPressed(Input.Keys.Y) && points.size() > 1) {
 			train();
 		}
 
@@ -149,12 +149,12 @@ public abstract class BaseLogisticRegressionSystem extends RenderEntitySystem im
 		if (trainForAccuracy && accuracy >= 0.99){
 			trainForAccuracy = false;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.U)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.U) && points.size() > 1) {
 			long start = System.currentTimeMillis();
 			while (System.currentTimeMillis() - start < 16) {
 				train();
 			}
-		} else if (trainForAccuracy && getAccuracy() < 0.99) {
+		} else if (trainForAccuracy && getAccuracy() < 0.99 && points.size() > 1) {
 			long start = System.currentTimeMillis();
 			while (System.currentTimeMillis() - start < 16) {
 				trainForAccuracy();

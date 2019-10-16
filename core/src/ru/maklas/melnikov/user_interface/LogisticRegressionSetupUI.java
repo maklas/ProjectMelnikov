@@ -6,6 +6,7 @@ import com.kotcrab.vis.ui.util.Validators;
 import com.kotcrab.vis.ui.widget.*;
 import ru.maklas.melnikov.states.Parameters;
 import ru.maklas.melnikov.utils.StringUtils;
+import ru.maklas.melnikov.utils.Utils;
 
 public class LogisticRegressionSetupUI extends BaseStage {
 
@@ -31,7 +32,7 @@ public class LogisticRegressionSetupUI extends BaseStage {
 		cloudSizeTextField = new VisValidatableTextField(Validators.INTEGERS);
 		cloudRadiusTextField = new VisValidatableTextField(Validators.INTEGERS);
 		learningRateTextField = new VisValidatableTextField(Validators.FLOATS);
-		classNumberSlider = new VisSlider(3, 5, 1, false);
+		classNumberSlider = new VisSlider(3, Utils.maxClasses, 1, false);
 		VisLabel classNumberLabel;
 
 
